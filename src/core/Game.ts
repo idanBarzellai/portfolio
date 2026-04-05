@@ -36,6 +36,12 @@ export class Game {
   private debugGrounded: HTMLElement | null = null;
   private debugLadder: HTMLElement | null = null;
   private debugScene: HTMLElement | null = null;
+  private jumpSlider: HTMLInputElement | null = null;
+  private moveSlider: HTMLInputElement | null = null;
+  private climbSlider: HTMLInputElement | null = null;
+  private jumpValue: HTMLElement | null = null;
+  private moveValue: HTMLElement | null = null;
+  private climbValue: HTMLElement | null = null;
 
   private wasGroundedLastFrame: boolean = false;
 
@@ -50,6 +56,7 @@ export class Game {
     this.audio = new AudioManager();
 
     this.initializeUI();
+    this.audio.setBackgroundMusicActive(true);
     this.initializeScene('main');
     this.start();
   }
@@ -67,6 +74,57 @@ export class Game {
     this.debugGrounded = document.getElementById('debug-grounded');
     this.debugLadder = document.getElementById('debug-ladder');
     this.debugScene = document.getElementById('debug-scene');
+
+    this.jumpSlider = document.getElementById('slider-jump') as HTMLInputElement | null;
+    this.moveSlider = document.getElementById('slider-move') as HTMLInputElement | null;
+    this.climbSlider = document.getElementById('slider-climb') as HTMLInputElement | null;
+
+    this.jumpValue = document.getElementById('slider-jump-value');
+    this.moveValue = document.getElementById('slider-move-value');
+    this.climbValue = document.getElementById('slider-climb-value');
+
+    this.configureTuningSliders();
+  }
+
+  private configureTuningSliders(): void {
+    const bindSlider = (
+      slider: HTMLInputElement | null,
+      valueNode: HTMLElement | null,
+      initialValue: number,
+      onValue: (value: number) => void
+    ): void => {
+      if (!slider) {
+        return;
+      }
+
+      slider.value = initialValue.toString();
+      if (valueNode) {
+        valueNode.textContent = initialValue.toFixed(1);
+      }
+
+      const handler = () => {
+        const parsed = Number(slider.value);
+        onValue(parsed);
+        if (valueNode) {
+          valueNode.textContent = parsed.toFixed(1);
+        }
+      };
+
+      slider.addEventListener('input', handler);
+      handler();
+    };
+
+    bindSlider(this.jumpSlider, this.jumpValue, this.player.getJumpPower(), (value) => {
+      this.player.setJumpPower(value);
+    });
+
+    bindSlider(this.moveSlider, this.moveValue, this.player.getMoveSpeed(), (value) => {
+      this.player.setMoveSpeed(value);
+    });
+
+    bindSlider(this.climbSlider, this.climbValue, this.player.getClimbSpeed(), (value) => {
+      this.player.setClimbSpeed(value);
+    });
   }
 
   private initializeMainScene(): void {
@@ -176,6 +234,8 @@ export class Game {
   }
 
   private update(): void {
+    this.audio.setBackgroundMusicActive(true);
+
     const touchingLadder = this.ropes.some((rope) => Physics.isColliding(this.player, rope));
     this.player.update(this.input, touchingLadder);
 
@@ -453,6 +513,7 @@ export class Game {
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
     }
+    this.audio.setBackgroundMusicActive(false);
     this.audio.setWalkingActive(false);
   }
 }

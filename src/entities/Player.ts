@@ -18,8 +18,9 @@ export class Player implements AABB {
   vx: number = 0; // Velocity X
   vy: number = 0; // Velocity Y
 
-  private moveSpeed: number = 5;
-  private jumpPower: number = 16;
+  private moveSpeed: number = 4.5;
+  private jumpPower: number = 10.5;
+  private climbSpeed: number = 3;
   private isGrounded: boolean = false;
   private canJump: boolean = true;
   private onLadder: boolean = false;
@@ -108,9 +109,9 @@ export class Player implements AABB {
     if (this.onLadder) {
       this.vy = 0;
       if (input.isClimbingUp()) {
-        this.vy = -this.moveSpeed * 0.9;
+        this.vy = -this.climbSpeed;
       } else if (input.isClimbingDown()) {
-        this.vy = this.moveSpeed * 0.9;
+        this.vy = this.climbSpeed;
       }
     } else {
       Physics.applyGravity(this);
@@ -156,9 +157,9 @@ export class Player implements AABB {
 
     const input = (this.constructor as any)._lastInput;
     if (input?.isClimbingUp()) {
-      this.vy = -this.moveSpeed;
+      this.vy = -this.climbSpeed;
     } else if (input?.isClimbingDown()) {
-      this.vy = this.moveSpeed;
+      this.vy = this.climbSpeed;
     }
   }
 
@@ -234,5 +235,29 @@ export class Player implements AABB {
 
   isWalkingOnGroundNow(): boolean {
     return this.isGrounded && Math.abs(this.vx) > 0.1;
+  }
+
+  setMoveSpeed(value: number): void {
+    this.moveSpeed = Math.max(1, value);
+  }
+
+  getMoveSpeed(): number {
+    return this.moveSpeed;
+  }
+
+  setJumpPower(value: number): void {
+    this.jumpPower = Math.max(1, value);
+  }
+
+  getJumpPower(): number {
+    return this.jumpPower;
+  }
+
+  setClimbSpeed(value: number): void {
+    this.climbSpeed = Math.max(0.5, value);
+  }
+
+  getClimbSpeed(): number {
+    return this.climbSpeed;
   }
 }

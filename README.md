@@ -49,7 +49,7 @@ The portfolio should feel like a playable game, not a static page:
 ## Controls
 
 - **Left/Right** or **A/D**: Move
-- **Space**: Jump
+- **Up** or **W**: Jump
 - **Up/Down** or **W/S**: Climb ladders
 - **Up near portal**: Enter scene
 - **Up near Exit portal**: Return to main scene

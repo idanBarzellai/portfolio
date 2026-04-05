@@ -32,7 +32,7 @@ export class Input {
   }
 
   isJumping(): boolean {
-    return this.isKeyPressed(' ');
+    return this.isKeyPressed('arrowup') || this.isKeyPressed('w');
   }
 
   isClimbingUp(): boolean {

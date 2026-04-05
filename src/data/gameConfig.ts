@@ -31,6 +31,7 @@ export interface PlayerSpriteStateConfig {
 
 export interface SoundClipConfig {
   src?: string;
+  variants?: string[];
   volume: number;
   loop?: boolean;
 }
@@ -68,6 +69,7 @@ export interface GameConfig {
     portalEnter: SoundClipConfig;
     walk: SoundClipConfig;
     jump: SoundClipConfig;
+    backgroundMusic: SoundClipConfig;
   };
   scenes: Record<SceneId, SceneVisualConfig>;
 }
@@ -168,8 +170,36 @@ export const gameConfig: GameConfig = {
   audio: {
     // Replace src paths with your own files under dist/assets/sfx/...
     portalEnter: { src: undefined, volume: 0.65 },
-    walk: { src: undefined, volume: 0.35, loop: true },
-    jump: { src: undefined, volume: 0.75 },
+    walk: {
+      src: undefined,
+      variants: [
+        'assets/Floor/Steps_floor-001.ogg',
+        'assets/Floor/Steps_floor-002.ogg',
+        'assets/Floor/Steps_floor-003.ogg',
+        'assets/Floor/Steps_floor-004.ogg',
+        'assets/Floor/Steps_floor-005.ogg',
+        'assets/Floor/Steps_floor-006.ogg',
+        'assets/Floor/Steps_floor-007.ogg',
+        'assets/Floor/Steps_floor-008.ogg',
+        'assets/Floor/Steps_floor-009.ogg',
+        'assets/Floor/Steps_floor-010.ogg',
+        'assets/Floor/Steps_floor-011.ogg',
+        'assets/Floor/Steps_floor-012.ogg',
+        'assets/Floor/Steps_floor-013.ogg',
+        'assets/Floor/Steps_floor-014.ogg',
+        'assets/Floor/Steps_floor-015.ogg',
+        'assets/Floor/Steps_floor-016.ogg',
+        'assets/Floor/Steps_floor-017.ogg',
+        'assets/Floor/Steps_floor-018.ogg',
+        'assets/Floor/Steps_floor-019.ogg',
+        'assets/Floor/Steps_floor-020.ogg',
+        'assets/Floor/Steps_floor-021.ogg',
+      ],
+      volume: 0.35,
+      loop: true,
+    },
+    jump: { src: 'assets/jump.wav', volume: 0.75 },
+    backgroundMusic: { src: 'assets/BGM.mp3', volume: 0.22, loop: true },
   },
   scenes: {
     main: {
