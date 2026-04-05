@@ -16,17 +16,17 @@ export class Player implements AABB {
   vy: number = 0; // Velocity Y
 
   private moveSpeed: number = 5;
-  private jumpPower: number = 12;
+  private jumpPower: number = 16;
   private isGrounded: boolean = false;
   private canJump: boolean = true;
-  private onRope: boolean = false;
+  private onLadder: boolean = false;
 
   constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
   }
 
-  update(input: Input): void {
+  update(input: Input, touchingLadder: boolean): void {
     // Horizontal movement
     this.vx = 0;
     if (input.isMovingLeft()) {
@@ -35,6 +35,8 @@ export class Player implements AABB {
     if (input.isMovingRight()) {
       this.vx = this.moveSpeed;
     }
+
+    this.onLadder = touchingLadder;
 
     // Jumping
     if (input.isJumping() && this.isGrounded && this.canJump) {
@@ -45,8 +47,14 @@ export class Player implements AABB {
       this.canJump = true;
     }
 
-    // Apply gravity (unless on rope)
-    if (!this.onRope) {
+    if (this.onLadder) {
+      this.vy = 0;
+      if (input.isClimbingUp()) {
+        this.vy = -this.moveSpeed * 0.9;
+      } else if (input.isClimbingDown()) {
+        this.vy = this.moveSpeed * 0.9;
+      }
+    } else {
       Physics.applyGravity(this);
     }
 
@@ -56,22 +64,28 @@ export class Player implements AABB {
 
     // Reset grounded state
     this.isGrounded = false;
-    this.onRope = false;
   }
 
   /**
    * Handle collision with a platform
    */
-  collideWithPlatform(platform: AABB): void {
-    if (!Physics.isColliding(this, platform)) return;
+  collideWithPlatform(platform: AABB, allowPassThrough: boolean = false): boolean {
+    if (!Physics.isColliding(this, platform)) return false;
 
     const side = Physics.getCollisionSide(this, platform);
+
+    if (allowPassThrough && side === 'bottom') {
+      return false;
+    }
+
     if (side === 'top') {
       Physics.resolveCollision(this, platform, side);
       this.isGrounded = true;
     } else if (side) {
       Physics.resolveCollision(this, platform, side);
     }
+
+    return true;
   }
 
   /**
@@ -79,7 +93,7 @@ export class Player implements AABB {
    */
   onRopeCollision(rope: AABB): void {
     if (!Physics.isColliding(this, rope)) return;
-    this.onRope = true;
+    this.onLadder = true;
     this.vy = 0; // Stop vertical movement
 
     const input = (this.constructor as any)._lastInput;
@@ -108,5 +122,9 @@ export class Player implements AABB {
 
   isGroundedNow(): boolean {
     return this.isGrounded;
+  }
+
+  isOnLadderNow(): boolean {
+    return this.onLadder;
   }
 }

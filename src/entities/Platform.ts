@@ -45,5 +45,13 @@ export class Platform implements AABB {
     for (let i = 0; i < this.width; i += 20) {
       ctx.fillRect(this.x + i, this.y + 5, 15, 5);
     }
+
+    if (this.section) {
+      ctx.fillStyle = '#1f1f1f';
+      ctx.font = 'bold 18px Segoe UI';
+      ctx.textAlign = 'center';
+      ctx.fillText(this.section, this.x + this.width / 2, this.y - 12);
+      ctx.textAlign = 'start';
+    }
   }
 }
