@@ -5,12 +5,15 @@
 
 import { Physics, AABB } from '../core/Physics';
 import { Input } from '../core/Input';
+import { gameConfig } from '../data/gameConfig';
+
+type PlayerAnimState = 'idle' | 'walk' | 'jump' | 'climb';
 
 export class Player implements AABB {
   x: number;
   y: number;
-  width: number = 30;
-  height: number = 40;
+  width: number = gameConfig.player.width;
+  height: number = gameConfig.player.height;
 
   vx: number = 0; // Velocity X
   vy: number = 0; // Velocity Y
@@ -20,10 +23,63 @@ export class Player implements AABB {
   private isGrounded: boolean = false;
   private canJump: boolean = true;
   private onLadder: boolean = false;
+  private facing: 'left' | 'right' = 'right';
+  private currentAnim: PlayerAnimState = 'idle';
+  private animFrame: number = 0;
+  private animCounter: number = 0;
+  private spriteImages: Partial<Record<PlayerAnimState, HTMLImageElement>> = {};
 
   constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
+    this.preloadSprites();
+  }
+
+  private preloadSprites(): void {
+    const sprites = gameConfig.player.sprites;
+    const states: PlayerAnimState[] = ['idle', 'walk', 'jump', 'climb'];
+
+    for (const state of states) {
+      const src = sprites[state].src;
+      if (!src) {
+        continue;
+      }
+
+      const image = new Image();
+      image.src = src;
+      this.spriteImages[state] = image;
+    }
+  }
+
+  private resolveAnimationState(): PlayerAnimState {
+    if (this.onLadder && Math.abs(this.vy) > 0.1) {
+      return 'climb';
+    }
+    if (!this.isGrounded) {
+      return 'jump';
+    }
+    if (Math.abs(this.vx) > 0.1) {
+      return 'walk';
+    }
+    return 'idle';
+  }
+
+  private tickAnimation(state: PlayerAnimState): void {
+    const sprite = gameConfig.player.sprites[state];
+    const frameAdvanceEvery = Math.max(1, Math.round(60 / Math.max(1, sprite.fps)));
+
+    if (state !== this.currentAnim) {
+      this.currentAnim = state;
+      this.animFrame = 0;
+      this.animCounter = 0;
+      return;
+    }
+
+    this.animCounter += 1;
+    if (this.animCounter >= frameAdvanceEvery) {
+      this.animCounter = 0;
+      this.animFrame = (this.animFrame + 1) % Math.max(1, sprite.frames);
+    }
   }
 
   update(input: Input, touchingLadder: boolean): void {
@@ -31,9 +87,11 @@ export class Player implements AABB {
     this.vx = 0;
     if (input.isMovingLeft()) {
       this.vx = -this.moveSpeed;
+      this.facing = 'left';
     }
     if (input.isMovingRight()) {
       this.vx = this.moveSpeed;
+      this.facing = 'right';
     }
 
     this.onLadder = touchingLadder;
@@ -105,7 +163,48 @@ export class Player implements AABB {
   }
 
   render(ctx: CanvasRenderingContext2D): void {
-    // Draw player as a simple rectangle with a circle head
+    const state = this.resolveAnimationState();
+    this.tickAnimation(state);
+
+    const image = this.spriteImages[state];
+    const sprite = gameConfig.player.sprites[state];
+
+    if (image && image.complete && image.naturalWidth > 0) {
+      const sourceX = this.animFrame * sprite.frameWidth;
+
+      ctx.save();
+      if (this.facing === 'left') {
+        ctx.translate(this.x + this.width, this.y);
+        ctx.scale(-1, 1);
+        ctx.drawImage(
+          image,
+          sourceX,
+          0,
+          sprite.frameWidth,
+          sprite.frameHeight,
+          0,
+          0,
+          this.width,
+          this.height
+        );
+      } else {
+        ctx.drawImage(
+          image,
+          sourceX,
+          0,
+          sprite.frameWidth,
+          sprite.frameHeight,
+          this.x,
+          this.y,
+          this.width,
+          this.height
+        );
+      }
+      ctx.restore();
+      return;
+    }
+
+    // Fallback player art when no sprite sheet is configured.
     ctx.fillStyle = '#FF6B6B';
     ctx.fillRect(this.x, this.y + 15, this.width, this.height - 15);
 
@@ -114,10 +213,15 @@ export class Player implements AABB {
     ctx.arc(this.x + this.width / 2, this.y + 10, 8, 0, Math.PI * 2);
     ctx.fill();
 
-    // Eyes
     ctx.fillStyle = '#000';
-    ctx.fillRect(this.x + 8, this.y + 6, 4, 4);
-    ctx.fillRect(this.x + 18, this.y + 6, 4, 4);
+    const eyeY = this.y + 6;
+    if (this.facing === 'left') {
+      ctx.fillRect(this.x + 7, eyeY, 4, 4);
+      ctx.fillRect(this.x + 15, eyeY, 4, 4);
+    } else {
+      ctx.fillRect(this.x + 11, eyeY, 4, 4);
+      ctx.fillRect(this.x + 19, eyeY, 4, 4);
+    }
   }
 
   isGroundedNow(): boolean {
@@ -126,5 +230,9 @@ export class Player implements AABB {
 
   isOnLadderNow(): boolean {
     return this.onLadder;
+  }
+
+  isWalkingOnGroundNow(): boolean {
+    return this.isGrounded && Math.abs(this.vx) > 0.1;
   }
 }

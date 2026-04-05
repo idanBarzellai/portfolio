@@ -54,6 +54,72 @@ The portfolio should feel like a playable game, not a static page:
 - **Up near portal**: Enter scene
 - **Up near Exit portal**: Return to main scene
 
+## HUD Layout
+
+- Controls and debug are now outside the game frame in a side HUD panel.
+- Game canvas stays clean for presentation and screenshots.
+
+## Easy Customization
+
+Use these files as your content/asset control center.
+
+### 1) Section Text + Images
+
+Edit [src/data/portfolioData.ts](src/data/portfolioData.ts)
+
+- `title`, `content`
+- `roomTitle`, `roomSubtitle`
+- `backgroundImage`
+- `items[]` with `title`, `description`, `image`
+- `projects[]` with `title`, `description`, `image`, `tags`, `link`
+
+### 2) Scene Backgrounds + Room Titles
+
+Edit [src/data/gameConfig.ts](src/data/gameConfig.ts)
+
+- `scenes.<sceneId>.roomTitle`
+- `scenes.<sceneId>.roomSubtitle`
+- `scenes.<sceneId>.backgroundImage`
+- `scenes.<sceneId>.backgroundGradient`
+
+### 3) Platform and Ladder Layout
+
+Edit [src/data/gameConfig.ts](src/data/gameConfig.ts)
+
+- `mainScene.platforms[]` for platform position/size/color/section mapping
+- `mainScene.ropes[]` for ladder position/height
+
+### 4) Player Look + Animations
+
+Edit [src/data/gameConfig.ts](src/data/gameConfig.ts)
+
+- `player.width`, `player.height`
+- `player.sprites.idle|walk|jump|climb`
+	- `src`: sprite sheet path
+	- `frameWidth`, `frameHeight`
+	- `frames`, `fps`
+
+If `src` is not set, the game falls back to a simple built-in player render.
+
+### 5) Replace Sound Effects
+
+Edit [src/data/gameConfig.ts](src/data/gameConfig.ts)
+
+- `audio.portalEnter.src`
+- `audio.walk.src`
+- `audio.jump.src`
+- `volume` and `loop`
+
+If `src` is not set, that sound is skipped.
+
+### Asset Path Tip
+
+Put files under `dist/assets/...` and reference them as paths like:
+
+- `assets/backgrounds/projects-room.jpg`
+- `assets/player/walk.png`
+- `assets/sfx/jump.wav`
+
 ## What Is Already Implemented
 
 - [x] Main hub scene with labeled section platforms
@@ -103,6 +169,7 @@ src/
 		Input.ts
 		Physics.ts
 	data/
+		gameConfig.ts
 		portfolioData.ts
 	entities/
 		Platform.ts
