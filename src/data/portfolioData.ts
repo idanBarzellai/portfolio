@@ -20,15 +20,9 @@ export interface SectionData {
 
 export const portfolioSections: SectionData[] = [
   {
-    id: 'about',
-    title: 'About Me',
-    content:
-      "I'm a passionate game designer and developer with experience in creating engaging 2D and 3D experiences. I love crafting unique gameplay mechanics and building immersive worlds.",
-  },
-  {
     id: 'skills',
     title: 'Skills',
-    content: 'Game Design • Level Design • Mechanics Design • Player Experience • Unity • Unreal Engine • Python • C#',
+    content: 'Game Design • Level Design • Mechanics Design • Player Experience • Unity • Unreal Engine • Prototyping • Balancing',
   },
   {
     id: 'projects',
@@ -51,14 +45,20 @@ export const portfolioSections: SectionData[] = [
     ],
   },
   {
-    id: 'experience',
-    title: 'Experience',
+    id: 'work-experience',
+    title: 'Work Experience',
     content:
       'Game Designer at Studio X (2021-2023) • Level Designer at Studio Y (2020-2021) • Independent Developer (2019-Present)',
   },
   {
-    id: 'contact',
-    title: 'Contact',
-    content: 'Email: idan@example.com | LinkedIn: linkedIn.com/in/idan | GitHub: github.com/idanBarzellai',
+    id: 'academic-experience',
+    title: 'Academic Experience',
+    content:
+      'B.Sc. Software Engineering • Game AI Research Project • Human-Computer Interaction Lab • Interactive Media Workshop',
+  },
+  {
+    id: 'languages',
+    title: 'Languages',
+    content: 'C# • TypeScript • Python • C++ • JavaScript • SQL',
   },
 ];

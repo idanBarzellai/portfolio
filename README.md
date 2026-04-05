@@ -1,99 +1,124 @@
 # Idan's Game Designer Portfolio
 
-A browser-based platformer game that doubles as a portfolio website. Navigate through a 2D game world to explore my game design work, projects, and experience.
+A browser platformer where the main world acts as a world-map hub and each portfolio domain is a dedicated themed scene.
 
-## Features
+## Core Vision
 
-- **2D Platformer Gameplay**: Move, jump, and climb through the game world
-- **Interactive Sections**: Each platform leads to a different portfolio section
-- **Responsive Controls**: Smooth keyboard-based player movement
-- **Physics Engine**: Gravity, collision detection, and velocity-based movement
+The portfolio should feel like a playable game, not a static page:
+
+1. Main scene with labeled platforms and ladders.
+2. A portal near each section platform.
+3. Press Up near a portal to enter a dedicated scene.
+4. Each scene visualizes portfolio information as world objects.
+5. Exit portal returns to the main scene.
+
+## Scene Design
+
+### Main Scene (Hub)
+
+- Side-scrolling platform layout with section labels above platforms.
+- Ladders support Up/Down movement and allow climbing through platform undersides.
+- Portals lead into thematic rooms.
+
+### Projects Scene (Gallery Room)
+
+- Gallery-style framed project cards.
+- Each card shows title, summary, and tags.
+- Represents all featured projects.
+
+### Work Experience Scene (Factory)
+
+- Factory floor with a conveyor-belt style composition.
+- Each workplace/role appears as an object station on the assembly line.
+
+### Academic Experience Scene (Library)
+
+- Library-style shelves and reference cards.
+- Each academic item appears as a book/reference section.
+
+### Languages Scene (Plane Hangar)
+
+- Plane/hangar themed composition.
+- Programming languages shown as labels around the aircraft.
+
+### Skills Scene (Blacksmith Workshop)
+
+- Forge/workshop composition with weapon-like displays.
+- Each weapon represents a key skill.
+
+## Controls
+
+- **Left/Right** or **A/D**: Move
+- **Space**: Jump
+- **Up/Down** or **W/S**: Climb ladders
+- **Up near portal**: Enter scene
+- **Up near Exit portal**: Return to main scene
+
+## What Is Already Implemented
+
+- [x] Main hub scene with labeled section platforms
+- [x] Ladder climbing with upward platform pass-through behavior
+- [x] Portal entry system using Up interaction
+- [x] Dedicated scene rendering for:
+	- [x] Projects gallery
+	- [x] Work experience factory
+	- [x] Academic experience library
+	- [x] Languages plane hangar
+	- [x] Skills blacksmith workshop
+- [x] Exit portal back to main scene
 
 ## Tech Stack
 
-- **TypeScript** for type-safe development
-- **HTML5 Canvas** for rendering
-- **Webpack** for bundling
-- **CSS3** for styling
+- TypeScript
+- HTML5 Canvas
+- Webpack
+- CSS
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js (v16+)
-- npm
-
-### Installation
+### Install
 
 ```bash
 npm install
 ```
 
-### Development
+### Run Dev Server
 
 ```bash
 npm run dev
 ```
 
-This starts a development server at `http://localhost:8080` with hot reloading.
-
-### Build
+### Production Build
 
 ```bash
 npm run build
 ```
 
-Generates production bundle in the `dist/` folder.
-
-### Watch Mode
-
-```bash
-npm run watch
-```
-
-Watches for changes and rebuilds continuously.
-
-## Controls
-
-- **← →** or **A/D**: Move left/right
-- **Space**: Jump
-- **↑/↓** or **W/S**: Climb ropes
-- Walk into platforms to view portfolio sections
-
 ## Project Structure
 
-```
+```text
 src/
-├── core/
-│   ├── Game.ts          # Main game loop
-│   ├── Input.ts         # Keyboard input handling
-│   └── Physics.ts       # Collision & physics system
-├── entities/
-│   ├── Player.ts        # Player character
-│   ├── Platform.ts      # Solid platforms
-│   ├── Rope.ts          # Climbable ropes
-│   └── Portal.ts        # Interactive project portals (coming soon)
-├── ui/
-│   ├── Modal.ts         # Modal system (coming soon)
-│   └── SectionPanel.ts  # Portfolio section display (coming soon)
-├── data/
-│   └── portfolioData.ts # Portfolio content
-└── index.ts             # Entry point
+	core/
+		Game.ts
+		Input.ts
+		Physics.ts
+	data/
+		portfolioData.ts
+	entities/
+		Platform.ts
+		Player.ts
+		Portal.ts
+		Rope.ts
+	index.ts
 ```
 
-## Roadmap
+## Next Enhancements
 
-- [x] Basic game engine with movement & gravity
-- [x] Collision detection & resolution
-- [x] Simple level with platforms
-- [ ] Rope climbing mechanic
-- [ ] Section triggers & panels
-- [ ] Portal system
-- [ ] Modal/dialog system
-- [ ] Smooth animations & transitions
-- [ ] Mobile controls
-- [ ] Audio & SFX
+1. Add camera transitions and scene fade-in/out when entering portals.
+2. Make project cards clickable in the Projects scene.
+3. Add ambient audio per scene.
+4. Add NPCs and interactive tooltips.
 
 ## Author
 
-Idan Barzellai - Game Designer & Developer
+Idan Barzellai

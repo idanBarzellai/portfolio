@@ -8,6 +8,7 @@ import { AABB } from '../core/Physics';
 export interface PlatformData extends AABB {
   id: string;
   section?: string;
+  sectionId?: string;
   color?: string;
 }
 
@@ -18,6 +19,7 @@ export class Platform implements AABB {
   height: number;
   id: string;
   section?: string;
+  sectionId?: string;
   color: string;
 
   constructor(data: PlatformData) {
@@ -27,6 +29,7 @@ export class Platform implements AABB {
     this.height = data.height;
     this.id = data.id;
     this.section = data.section;
+    this.sectionId = data.sectionId;
     this.color = data.color || '#8B4513';
   }
 
