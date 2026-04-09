@@ -67,6 +67,7 @@ export class Game {
 
     this.initializeUI();
     this.initializePointerInteraction();
+    this.initializeTouchControls();
     this.audio.setBackgroundMusicActive(true);
     this.initializeScene('main');
     hydratePortfolioSectionsFromAssets().catch(() => {
@@ -109,6 +110,93 @@ export class Game {
         window.open(targetProject.link, '_blank', 'noopener,noreferrer');
       }
     });
+  }
+
+  private initializeTouchControls(): void {
+    const controlsRoot = document.getElementById('mobile-controls');
+    const joystickBase = document.getElementById('mobile-joystick');
+    const joystickThumb = document.getElementById('mobile-joystick-thumb');
+    const jumpButton = document.getElementById('mobile-jump');
+
+    if (!controlsRoot || !joystickBase || !joystickThumb || !jumpButton) {
+      return;
+    }
+
+    let activeJoystickPointerId: number | null = null;
+    const joystickRadius = 42;
+
+    const resetJoystick = () => {
+      this.input.setVirtualMoveX(0);
+      this.input.setVirtualClimb(false, false);
+      joystickThumb.style.transform = 'translate(-50%, -50%)';
+    };
+
+    const updateJoystick = (clientX: number, clientY: number) => {
+      const rect = joystickBase.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const dx = clientX - centerX;
+      const dy = clientY - centerY;
+      const distance = Math.hypot(dx, dy);
+      const clampScale = distance > joystickRadius ? joystickRadius / distance : 1;
+      const clampedDx = dx * clampScale;
+      const clampedDy = dy * clampScale;
+
+      const moveX = clampedDx / joystickRadius;
+      const moveY = clampedDy / joystickRadius;
+
+      this.input.setVirtualMoveX(moveX);
+      this.input.setVirtualClimb(moveY < -0.38, moveY > 0.38);
+
+      joystickThumb.style.transform = `translate(calc(-50% + ${clampedDx}px), calc(-50% + ${clampedDy}px))`;
+    };
+
+    joystickBase.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      activeJoystickPointerId = event.pointerId;
+      joystickBase.setPointerCapture(event.pointerId);
+      updateJoystick(event.clientX, event.clientY);
+    });
+
+    joystickBase.addEventListener('pointermove', (event) => {
+      if (event.pointerId !== activeJoystickPointerId) {
+        return;
+      }
+      event.preventDefault();
+      updateJoystick(event.clientX, event.clientY);
+    });
+
+    const releaseJoystickPointer = (event: PointerEvent) => {
+      if (event.pointerId !== activeJoystickPointerId) {
+        return;
+      }
+      activeJoystickPointerId = null;
+      resetJoystick();
+    };
+
+    joystickBase.addEventListener('pointerup', releaseJoystickPointer);
+    joystickBase.addEventListener('pointercancel', releaseJoystickPointer);
+    joystickBase.addEventListener('lostpointercapture', () => {
+      activeJoystickPointerId = null;
+      resetJoystick();
+    });
+
+    const setJump = (active: boolean) => {
+      this.input.setVirtualJump(active);
+      jumpButton.classList.toggle('pressed', active);
+    };
+
+    jumpButton.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      jumpButton.setPointerCapture(event.pointerId);
+      setJump(true);
+    });
+
+    jumpButton.addEventListener('pointerup', () => setJump(false));
+    jumpButton.addEventListener('pointercancel', () => setJump(false));
+    jumpButton.addEventListener('lostpointercapture', () => setJump(false));
+
+    controlsRoot.addEventListener('contextmenu', (event) => event.preventDefault());
   }
 
   private getCanvasCoordinates(event: MouseEvent): { x: number; y: number } {
@@ -209,8 +297,8 @@ export class Game {
     this.player.vy = 0;
   }
 
-  private initializeSectionScene(_: Exclude<SceneId, 'main'>): void {
-    const sceneWidth = this.getCurrentSceneWidth();
+  private initializeSectionScene(sceneId: Exclude<SceneId, 'main'>): void {
+    const sceneWidth = this.getSceneTargetWidth(sceneId);
 
     this.platforms = [
       new Platform({
@@ -232,25 +320,50 @@ export class Game {
     this.player.vy = 0;
   }
 
-  private getCurrentSceneWidth(): number {
-    if (this.currentScene !== 'projects') {
-      return this.canvas.width;
+  private getSceneTargetWidth(sceneId: SceneId): number {
+    if (sceneId === 'projects') {
+      const section = this.getSection('projects');
+      const projectCount = section?.projects?.length ?? 0;
+      const imageWidth = 190;
+      const gap = 34;
+      const startX = 120;
+      const totalWidth = startX * 2 + projectCount * imageWidth + Math.max(0, projectCount - 1) * gap;
+      return Math.max(gameConfig.canvas.width, totalWidth);
     }
 
-    const section = this.getSection('projects');
-    const projectCount = section?.projects?.length ?? 0;
-    const imageWidth = 190;
-    const gap = 34;
-    const startX = 120;
-    const totalWidth = startX * 2 + projectCount * imageWidth + Math.max(0, projectCount - 1) * gap;
-    return Math.max(this.canvas.width, totalWidth);
+    if (sceneId === 'main') {
+      let maxRight = gameConfig.canvas.width;
+      for (const platform of gameConfig.mainScene.platforms) {
+        maxRight = Math.max(maxRight, platform.x + platform.width);
+      }
+      for (const rope of gameConfig.mainScene.ropes) {
+        maxRight = Math.max(maxRight, rope.x + (rope.width ?? 20));
+      }
+      return maxRight;
+    }
+
+    return gameConfig.canvas.width;
+  }
+
+  private getCurrentSceneWidth(): number {
+    return this.getSceneTargetWidth(this.currentScene);
+  }
+
+  private isCoarsePointerDevice(): boolean {
+    return window.matchMedia('(hover: none), (pointer: coarse)').matches;
   }
 
   private updateCamera(): void {
     const sceneWidth = this.getCurrentSceneWidth();
     const maxCamera = Math.max(0, sceneWidth - this.canvas.width);
+    const isCoarsePointer = this.isCoarsePointerDevice();
 
-    if (this.currentScene !== 'projects') {
+    if (this.currentScene === 'main' && !isCoarsePointer) {
+      this.cameraX = 0;
+      return;
+    }
+
+    if (maxCamera <= 0) {
       this.cameraX = 0;
       return;
     }
@@ -358,7 +471,8 @@ export class Game {
       this.player.vx = 0;
     }
 
-    const sceneWidth = this.getCurrentSceneWidth();
+    const isCoarsePointer = this.isCoarsePointerDevice();
+    const sceneWidth = this.currentScene === 'main' && !isCoarsePointer ? this.canvas.width : this.getCurrentSceneWidth();
     if (this.player.x + this.player.width > sceneWidth) {
       this.player.x = sceneWidth - this.player.width;
       this.player.vx = 0;
@@ -601,28 +715,40 @@ export class Game {
     }
   }
 
-  private renderBackground(): void {
+  private renderBackground(sceneWidth: number, alignToWorld: boolean): void {
     const sceneVisual = gameConfig.scenes[this.currentScene];
     const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
     gradient.addColorStop(0, sceneVisual.backgroundGradient[0]);
     gradient.addColorStop(1, sceneVisual.backgroundGradient[1]);
     this.ctx.fillStyle = gradient;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillRect(0, 0, alignToWorld ? sceneWidth : this.canvas.width, this.canvas.height);
 
     const sectionBackground = this.getSection(this.currentScene)?.backgroundImage;
     const image = this.getImage(sectionBackground || sceneVisual.backgroundImage);
     if (image) {
-      this.drawImageCover(image);
+      if (alignToWorld) {
+        this.ctx.drawImage(image, 0, 0, sceneWidth, this.canvas.height);
+      } else {
+        this.drawImageCover(image);
+      }
       this.ctx.fillStyle = 'rgba(0, 0, 0, 0.16)';
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      this.ctx.fillRect(0, 0, alignToWorld ? sceneWidth : this.canvas.width, this.canvas.height);
     }
   }
 
   private render(): void {
-    this.renderBackground();
+    const sceneWidth = this.getCurrentSceneWidth();
+    const followWorldBackground = this.currentScene === 'main' && this.isCoarsePointerDevice() && sceneWidth > this.canvas.width;
 
-    this.ctx.save();
-    this.ctx.translate(-this.cameraX, 0);
+    if (followWorldBackground) {
+      this.ctx.save();
+      this.ctx.translate(-this.cameraX, 0);
+      this.renderBackground(sceneWidth, true);
+    } else {
+      this.renderBackground(sceneWidth, false);
+      this.ctx.save();
+      this.ctx.translate(-this.cameraX, 0);
+    }
 
     if (this.currentScene !== 'main') {
       this.renderSectionSceneContent();

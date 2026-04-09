@@ -131,7 +131,7 @@ export const gameConfig: GameConfig = {
         width: 500,
         height: 40,        opacity: 0,
 
-        section: 'Academic Experienceeeee',
+        section: 'Academic Experience',
         sectionId: 'academic-experience',
         color: '#2E8B57',
       },

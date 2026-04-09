@@ -33,7 +33,7 @@ export interface SectionData {
 export let portfolioSections: SectionData[] = [
   {
     id: 'about',
-    title: 'Abouttttt',
+    title: 'About',
     content: 'Game designer and developer focused on playful systems, prototyping, and polished player experiences.',
     roomTitle: 'About Me',
     roomSubtitle: 'A short overview of who I am and how I work.',

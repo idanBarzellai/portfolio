@@ -5,6 +5,10 @@
 
 export class Input {
   private keysPressed: Set<string> = new Set();
+  private virtualMoveX: number = 0;
+  private virtualJump: boolean = false;
+  private virtualClimbUp: boolean = false;
+  private virtualClimbDown: boolean = false;
 
   constructor() {
     window.addEventListener('keydown', (e) => this.handleKeyDown(e));
@@ -24,22 +28,35 @@ export class Input {
   }
 
   isMovingLeft(): boolean {
-    return this.isKeyPressed('arrowleft') || this.isKeyPressed('a');
+    return this.isKeyPressed('arrowleft') || this.isKeyPressed('a') || this.virtualMoveX < -0.25;
   }
 
   isMovingRight(): boolean {
-    return this.isKeyPressed('arrowright') || this.isKeyPressed('d');
+    return this.isKeyPressed('arrowright') || this.isKeyPressed('d') || this.virtualMoveX > 0.25;
   }
 
   isJumping(): boolean {
-    return this.isKeyPressed('arrowup') || this.isKeyPressed('w');
+    return this.isKeyPressed('arrowup') || this.isKeyPressed('w') || this.virtualJump;
   }
 
   isClimbingUp(): boolean {
-    return this.isKeyPressed('arrowup') || this.isKeyPressed('w');
+    return this.isKeyPressed('arrowup') || this.isKeyPressed('w') || this.virtualClimbUp || this.virtualJump;
   }
 
   isClimbingDown(): boolean {
-    return this.isKeyPressed('arrowdown') || this.isKeyPressed('s');
+    return this.isKeyPressed('arrowdown') || this.isKeyPressed('s') || this.virtualClimbDown;
+  }
+
+  setVirtualMoveX(value: number): void {
+    this.virtualMoveX = Math.max(-1, Math.min(1, value));
+  }
+
+  setVirtualJump(active: boolean): void {
+    this.virtualJump = active;
+  }
+
+  setVirtualClimb(up: boolean, down: boolean): void {
+    this.virtualClimbUp = up;
+    this.virtualClimbDown = down;
   }
 }
