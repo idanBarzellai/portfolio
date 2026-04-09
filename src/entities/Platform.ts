@@ -10,6 +10,7 @@ export interface PlatformData extends AABB {
   section?: string;
   sectionId?: string;
   color?: string;
+  opacity?: number;
 }
 
 export class Platform implements AABB {
@@ -21,6 +22,7 @@ export class Platform implements AABB {
   section?: string;
   sectionId?: string;
   color: string;
+  opacity: number;
 
   constructor(data: PlatformData) {
     this.x = data.x;
@@ -31,9 +33,13 @@ export class Platform implements AABB {
     this.section = data.section;
     this.sectionId = data.sectionId;
     this.color = data.color || '#8B4513';
+    this.opacity = data.opacity ?? 1;
   }
 
   render(ctx: CanvasRenderingContext2D): void {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, Math.min(1, this.opacity));
+
     // Draw platform
     ctx.fillStyle = this.color;
     ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -48,6 +54,8 @@ export class Platform implements AABB {
     for (let i = 0; i < this.width; i += 20) {
       ctx.fillRect(this.x + i, this.y + 5, 15, 5);
     }
+
+    ctx.restore();
 
     if (this.section) {
       ctx.fillStyle = '#1f1f1f';

@@ -12,6 +12,7 @@ export class Portal implements AABB {
   height: number;
   sectionId: string;
   label: string;
+  
 
   constructor(x: number, y: number, sectionId: string, label: string) {
     this.x = x;

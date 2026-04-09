@@ -95,7 +95,12 @@ export class Player implements AABB {
       this.facing = 'right';
     }
 
-    this.onLadder = touchingLadder;
+    if (!touchingLadder) {
+      this.onLadder = false;
+    } else {
+      const holdLadder = input.isClimbingUp() || (this.onLadder && input.isClimbingDown());
+      this.onLadder = holdLadder;
+    }
 
     // Jumping
     if (input.isJumping() && this.isGrounded && this.canJump) {

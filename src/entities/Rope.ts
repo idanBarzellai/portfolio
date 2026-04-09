@@ -6,18 +6,36 @@
 import { AABB } from '../core/Physics';
 
 export class Rope implements AABB {
+  private static readonly spriteSrc = 'assets/Map/rope.png';
+  private static spriteImage: HTMLImageElement | null = null;
+
   x: number;
   y: number;
-  width: number = 20;
+  width: number;
   height: number;
 
-  constructor(x: number, y: number, height: number) {
+  constructor(x: number, y: number, height: number, width: number = 36) {
     this.x = x;
     this.y = y;
     this.height = height;
+    this.width = width;
+
+    if (!Rope.spriteImage) {
+      Rope.spriteImage = new Image();
+      Rope.spriteImage.src = Rope.spriteSrc;
+    }
   }
 
   render(ctx: CanvasRenderingContext2D): void {
+    const sprite = Rope.spriteImage;
+    if (sprite && sprite.complete && sprite.naturalWidth > 0) {
+      const previousSmoothing = ctx.imageSmoothingEnabled;
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(sprite, this.x, this.y, this.width, this.height);
+      ctx.imageSmoothingEnabled = previousSmoothing;
+      return;
+    }
+
     // Draw rope as a series of circles
     ctx.strokeStyle = '#D2691E';
     ctx.lineWidth = 3;

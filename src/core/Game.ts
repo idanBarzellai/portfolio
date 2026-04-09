@@ -11,7 +11,15 @@ import { Input } from './Input';
 import { Physics } from './Physics';
 import { AudioManager } from './AudioManager';
 import { gameConfig, SceneId } from '../data/gameConfig';
-import { portfolioSections, SectionData } from '../data/portfolioData';
+import { hydratePortfolioSectionsFromAssets, portfolioSections, ProjectData, SectionData } from '../data/portfolioData';
+
+interface ProjectHitArea {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  project: ProjectData;
+}
 
 export class Game {
   private canvas: HTMLCanvasElement;
@@ -30,6 +38,8 @@ export class Game {
   private currentScene: SceneId = 'main';
 
   private imageCache: Map<string, HTMLImageElement> = new Map();
+  private projectHitAreas: ProjectHitArea[] = [];
+  private cameraX = 0;
 
   private debugPosition: HTMLElement | null = null;
   private debugVelocity: HTMLElement | null = null;
@@ -56,9 +66,63 @@ export class Game {
     this.audio = new AudioManager();
 
     this.initializeUI();
+    this.initializePointerInteraction();
     this.audio.setBackgroundMusicActive(true);
     this.initializeScene('main');
+    hydratePortfolioSectionsFromAssets().catch(() => {
+      // Keep default fallback content if text assets are unavailable.
+    });
     this.start();
+  }
+
+  private initializePointerInteraction(): void {
+    this.canvas.addEventListener('mousemove', (event) => {
+      if (this.currentScene !== 'projects') {
+        this.canvas.style.cursor = 'default';
+        return;
+      }
+
+      const { x, y } = this.getCanvasCoordinates(event);
+      const hoveredProject = this.projectHitAreas.find((area) => this.isPointInArea(x + this.cameraX, y, area));
+      this.canvas.style.cursor = hoveredProject ? 'pointer' : 'default';
+    });
+
+    this.canvas.addEventListener('click', (event) => {
+      if (this.currentScene !== 'projects') {
+        return;
+      }
+
+      const { x, y } = this.getCanvasCoordinates(event);
+      const clickedProject = this.projectHitAreas.find((area) => this.isPointInArea(x + this.cameraX, y, area));
+      if (!clickedProject) {
+        return;
+      }
+
+      const targetProject = clickedProject.project;
+      if (!targetProject.link) {
+        window.alert(`No project link is configured yet for "${targetProject.title}".`);
+        return;
+      }
+
+      const shouldOpen = window.confirm(`Would you like to open "${targetProject.title}" in a new tab?`);
+      if (shouldOpen) {
+        window.open(targetProject.link, '_blank', 'noopener,noreferrer');
+      }
+    });
+  }
+
+  private getCanvasCoordinates(event: MouseEvent): { x: number; y: number } {
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = this.canvas.width / rect.width;
+    const scaleY = this.canvas.height / rect.height;
+    return {
+      x: (event.clientX - rect.left) * scaleX,
+      y: (event.clientY - rect.top) * scaleY,
+    };
+  }
+
+  private isPointInArea(x: number, y: number, area: ProjectHitArea): boolean {
+    return x >= area.x && x <= area.x + area.width && y >= area.y && y <= area.y + area.height;
   }
 
   private syncCanvasSize(): void {
@@ -129,7 +193,7 @@ export class Game {
 
   private initializeMainScene(): void {
     this.platforms = gameConfig.mainScene.platforms.map((platformData) => new Platform(platformData));
-    this.ropes = gameConfig.mainScene.ropes.map((rope) => new Rope(rope.x, rope.y, rope.height));
+    this.ropes = gameConfig.mainScene.ropes.map((rope) => new Rope(rope.x, rope.y, rope.height, rope.width));
 
     this.portals = this.platforms
       .filter((platform) => !!platform.section && !!platform.sectionId)
@@ -146,12 +210,14 @@ export class Game {
   }
 
   private initializeSectionScene(_: Exclude<SceneId, 'main'>): void {
+    const sceneWidth = this.getCurrentSceneWidth();
+
     this.platforms = [
       new Platform({
         id: 'section-ground',
         x: 0,
         y: 600,
-        width: 1200,
+        width: sceneWidth,
         height: 100,
         color: '#2F4F4F',
       }),
@@ -166,8 +232,37 @@ export class Game {
     this.player.vy = 0;
   }
 
+  private getCurrentSceneWidth(): number {
+    if (this.currentScene !== 'projects') {
+      return this.canvas.width;
+    }
+
+    const section = this.getSection('projects');
+    const projectCount = section?.projects?.length ?? 0;
+    const imageWidth = 190;
+    const gap = 34;
+    const startX = 120;
+    const totalWidth = startX * 2 + projectCount * imageWidth + Math.max(0, projectCount - 1) * gap;
+    return Math.max(this.canvas.width, totalWidth);
+  }
+
+  private updateCamera(): void {
+    const sceneWidth = this.getCurrentSceneWidth();
+    const maxCamera = Math.max(0, sceneWidth - this.canvas.width);
+
+    if (this.currentScene !== 'projects') {
+      this.cameraX = 0;
+      return;
+    }
+
+    const targetCamera = this.player.x + this.player.width / 2 - this.canvas.width / 2;
+    const clampedTarget = Math.max(0, Math.min(maxCamera, targetCamera));
+    this.cameraX += (clampedTarget - this.cameraX) * 0.14;
+  }
+
   private initializeScene(sceneId: SceneId): void {
     this.currentScene = sceneId;
+    this.cameraX = 0;
     this.activePortalHint = null;
     this.wasInteractPressed = false;
 
@@ -262,8 +357,10 @@ export class Game {
       this.player.x = 0;
       this.player.vx = 0;
     }
-    if (this.player.x + this.player.width > this.canvas.width) {
-      this.player.x = this.canvas.width - this.player.width;
+
+    const sceneWidth = this.getCurrentSceneWidth();
+    if (this.player.x + this.player.width > sceneWidth) {
+      this.player.x = sceneWidth - this.player.width;
       this.player.vx = 0;
     }
 
@@ -279,6 +376,7 @@ export class Game {
     this.wasGroundedLastFrame = this.player.isGroundedNow();
 
     this.audio.setWalkingActive(this.player.isWalkingOnGroundNow());
+    this.updateCamera();
     this.updateDebugPanel();
   }
 
@@ -337,16 +435,60 @@ export class Game {
 
   private renderProjectsGallery(section: SectionData): void {
     const projects = section.projects ?? [];
-    const cardWidth = 300;
-    const cardHeight = 190;
-    const gap = 28;
-    let x = 120;
-    const y = 170;
+    const imageWidth = 190;
+    const imageHeight = 190;
+    const gap = 34;
+    const marginX = 120;
+    const baseY = 195;
+    const now = performance.now() * 0.001;
 
-    for (const project of projects) {
-      const description = `${project.description} (${project.tags.join(', ')})`;
-      this.drawItemCard(x, y, cardWidth, cardHeight, project.title, description, project.image);
-      x += cardWidth + gap;
+    this.projectHitAreas = [];
+
+    for (let index = 0; index < projects.length; index++) {
+      const project = projects[index];
+      const x = marginX + index * (imageWidth + gap);
+      const floatOffset = Math.sin(now * 1.1 + index * 0.8) * 9;
+      const y = baseY + floatOffset;
+
+      const shadowAlpha = 0.22 + Math.abs(floatOffset) * 0.008;
+      this.ctx.fillStyle = `rgba(0, 0, 0, ${Math.min(shadowAlpha, 0.4)})`;
+      this.ctx.beginPath();
+      this.ctx.ellipse(x + imageWidth / 2, y + imageHeight + 18, 66, 14, 0, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      const image = this.getImage(project.image);
+      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+      this.ctx.fillRect(x, y, imageWidth, imageHeight);
+      this.ctx.strokeStyle = '#ffd166';
+      this.ctx.lineWidth = 3;
+      this.ctx.strokeRect(x, y, imageWidth, imageHeight);
+
+      if (image) {
+        this.ctx.drawImage(image, x + 6, y + 6, imageWidth - 12, imageHeight - 12);
+      } else {
+        this.ctx.fillStyle = '#0f172a';
+        this.ctx.fillRect(x + 6, y + 6, imageWidth - 12, imageHeight - 12);
+        this.ctx.fillStyle = '#f8fafc';
+        this.ctx.font = '12px Segoe UI';
+        this.ctx.fillText('Missing image', x + 50, y + 102);
+      }
+
+      this.ctx.fillStyle = 'rgba(7, 10, 20, 0.82)';
+      this.ctx.fillRect(x, y + imageHeight + 8, imageWidth, 52);
+      this.ctx.fillStyle = '#ffffff';
+      this.ctx.font = 'bold 14px Segoe UI';
+      this.ctx.fillText(project.title, x + 8, y + imageHeight + 28, imageWidth - 16);
+      this.ctx.font = '11px Segoe UI';
+      this.ctx.fillStyle = '#c7d2fe';
+      this.ctx.fillText('Click to open project link', x + 8, y + imageHeight + 47, imageWidth - 16);
+
+      this.projectHitAreas.push({
+        x,
+        y,
+        width: imageWidth,
+        height: imageHeight + 52,
+        project,
+      });
     }
   }
 
@@ -416,8 +558,24 @@ export class Game {
     });
   }
 
+  private renderAboutRoom(section: SectionData): void {
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+    this.ctx.fillRect(120, 145, 960, 410);
+
+    this.ctx.fillStyle = '#1f2937';
+    this.ctx.font = 'bold 20px Segoe UI';
+    this.ctx.fillText(section.content, 150, 205, 900);
+
+    const items = section.items ?? [];
+    items.forEach((item, index) => {
+      const x = 150 + index * 320;
+      this.drawItemCard(x, 260, 280, 160, item.title, item.description);
+    });
+  }
+
   private renderSectionSceneContent(): void {
     if (this.currentScene === 'main') {
+      this.projectHitAreas = [];
       return;
     }
 
@@ -428,6 +586,8 @@ export class Game {
 
     if (this.currentScene === 'projects') {
       this.renderProjectsGallery(section);
+    } else if (this.currentScene === 'about') {
+      this.renderAboutRoom(section);
     } else if (this.currentScene === 'work-experience') {
       this.renderWorkFactory(section);
     } else if (this.currentScene === 'academic-experience') {
@@ -436,20 +596,8 @@ export class Game {
       this.renderLanguagesHangar(section);
     } else if (this.currentScene === 'skills') {
       this.renderSkillsWorkshop(section);
-    }
-  }
-
-  private renderClouds(): void {
-    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-    const time = Date.now() * 0.0001;
-    for (let i = 0; i < 3; i++) {
-      const x = (i * 400 + time * 50) % this.canvas.width;
-      const y = 50 + i * 30;
-      this.ctx.beginPath();
-      this.ctx.arc(x, y, 30, 0, Math.PI * 2);
-      this.ctx.arc(x + 40, y, 40, 0, Math.PI * 2);
-      this.ctx.arc(x + 80, y, 30, 0, Math.PI * 2);
-      this.ctx.fill();
+    } else {
+      this.projectHitAreas = [];
     }
   }
 
@@ -473,11 +621,11 @@ export class Game {
   private render(): void {
     this.renderBackground();
 
-    if (this.currentScene === 'main') {
-      this.renderClouds();
-    } else {
+    this.ctx.save();
+    this.ctx.translate(-this.cameraX, 0);
+
+    if (this.currentScene !== 'main') {
       this.renderSectionSceneContent();
-      this.renderSceneTitle();
     }
 
     for (const platform of this.platforms) {
@@ -497,6 +645,11 @@ export class Game {
     }
 
     this.player.render(this.ctx);
+    this.ctx.restore();
+
+    if (this.currentScene !== 'main') {
+      this.renderSceneTitle();
+    }
   }
 
   private gameLoop(): void {

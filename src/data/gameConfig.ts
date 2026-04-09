@@ -2,6 +2,7 @@ import { PlatformData } from '../entities/Platform';
 
 export type SceneId =
   | 'main'
+  | 'about'
   | 'projects'
   | 'work-experience'
   | 'academic-experience'
@@ -12,6 +13,7 @@ export interface RopeConfig {
   x: number;
   y: number;
   height: number;
+  width?: number;
 }
 
 export interface SceneVisualConfig {
@@ -86,68 +88,94 @@ export const gameConfig: GameConfig = {
     },
     platforms: [
       {
-        id: 'ground',
+        id: 'groundTopRight',
+       x: 900,
+        y: 270,
+        width: 330,
+        height: 40,        opacity: 0,
+        color: '#228B22',
+      },
+       {
+        id: 'groundLeft',
         x: 0,
-        y: 600,
+        y: 630,
+        width: 600,
+        height: 100,
+        opacity: 0,
+        color: '#228B22',
+      }, {
+        id: 'groundBottom',
+        x: 200,
+        y: 690,
         width: 1200,
         height: 100,
+        opacity: 0,
         color: '#228B22',
       },
       {
-        id: 'platform-skills',
-        x: 100,
-        y: 480,
-        width: 200,
+        id: 'platform-about',
+        x: 0,
+        y: 240,
+        width: 570,
         height: 40,
+                opacity: 0,
+
+        section: 'About',
+        sectionId: 'about',
+        color: '#C07A2A',
+      },
+      {
+        id: 'platform-academic',
+        x: 0,
+        y: 410,
+        width: 500,
+        height: 40,        opacity: 0,
+
+        section: 'Academic Experienceeeee',
+        sectionId: 'academic-experience',
+        color: '#2E8B57',
+      },
+      {
+        id: 'platform-work',
+        x: 0,
+        y: 590,
+        width: 290,
+        height: 40,        opacity: 0,
+
+        section: 'Work Experience',
+        sectionId: 'work-experience',
+        color: '#9370DB',
+      },
+      {
+        id: 'platform-skills',
+        x: 660,
+        y: 450,
+        width: 700,
+        height: 40,        opacity: 0,
+
         section: 'Skills',
         sectionId: 'skills',
         color: '#4169E1',
       },
       {
         id: 'platform-projects',
-        x: 500,
-        y: 350,
-        width: 200,
-        height: 40,
+     
+    x: 670,
+        y: 640,
+        width: 400,
+        height: 100,
+        opacity: 0,
         section: 'Projects',
         sectionId: 'projects',
         color: '#FF8C00',
       },
-      {
-        id: 'platform-languages',
-        x: 900,
-        y: 480,
-        width: 200,
-        height: 40,
-        section: 'Languages',
-        sectionId: 'languages',
-        color: '#DC143C',
-      },
-      {
-        id: 'platform-work',
-        x: 300,
-        y: 200,
-        width: 200,
-        height: 40,
-        section: 'Work Experience',
-        sectionId: 'work-experience',
-        color: '#9370DB',
-      },
-      {
-        id: 'platform-academic',
-        x: 760,
-        y: 220,
-        width: 220,
-        height: 40,
-        section: 'Academic Experience',
-        sectionId: 'academic-experience',
-        color: '#2E8B57',
-      },
     ],
     ropes: [
-      { x: 320, y: 160, height: 240 },
-      { x: 620, y: 300, height: 240 },
-      { x: 860, y: 180, height: 320 },
+      { x:50, y: 250, height: 335, width: 24 },
+      { x: 450, y: 420, height: 150, width: 16 },
+      { x: 1100, y: 280, height: 300, width: 24
+
+       },
     ],
   },
   sectionScene: {
@@ -184,9 +212,7 @@ export const gameConfig: GameConfig = {
         'assets/Floor/Steps_floor-009.ogg',
         'assets/Floor/Steps_floor-010.ogg',
         'assets/Floor/Steps_floor-011.ogg',
-        'assets/Floor/Steps_floor-012.ogg',
-        'assets/Floor/Steps_floor-013.ogg',
-        'assets/Floor/Steps_floor-014.ogg',
+
         'assets/Floor/Steps_floor-015.ogg',
         'assets/Floor/Steps_floor-016.ogg',
         'assets/Floor/Steps_floor-017.ogg',
@@ -206,7 +232,13 @@ export const gameConfig: GameConfig = {
       roomTitle: 'Main World',
       roomSubtitle: 'Choose a portal and press Up to enter.',
       backgroundGradient: ['#87CEEB', '#E0F6FF'],
-      backgroundImage: undefined,
+      backgroundImage: 'assets/Background Images/MainScene.png',
+    },
+    about: {
+      roomTitle: 'About Me',
+      roomSubtitle: 'A quick introduction to my design and development focus.',
+      backgroundGradient: ['#F6D7A7', '#E9B77E'],
+      backgroundImage: 'assets/Background Images/MainScene.png',
     },
     projects: {
       roomTitle: 'Projects Gallery',
