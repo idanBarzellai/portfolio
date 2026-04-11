@@ -9,6 +9,8 @@ import { gameConfig } from '../data/gameConfig';
 
 type PlayerAnimState = 'idle' | 'walk' | 'jump' | 'climb';
 
+type SpriteFrameSource = HTMLImageElement | HTMLImageElement[];
+
 export class Player implements AABB {
   x: number;
   y: number;
@@ -28,7 +30,7 @@ export class Player implements AABB {
   private currentAnim: PlayerAnimState = 'idle';
   private animFrame: number = 0;
   private animCounter: number = 0;
-  private spriteImages: Partial<Record<PlayerAnimState, HTMLImageElement>> = {};
+  private spriteImages: Partial<Record<PlayerAnimState, SpriteFrameSource>> = {};
 
   constructor(x: number, y: number) {
     this.x = x;
@@ -41,6 +43,16 @@ export class Player implements AABB {
     const states: PlayerAnimState[] = ['idle', 'walk', 'jump', 'climb'];
 
     for (const state of states) {
+      const frameSources = sprites[state].frameSources;
+      if (frameSources && frameSources.length > 0) {
+        this.spriteImages[state] = frameSources.map((src) => {
+          const image = new Image();
+          image.src = src;
+          return image;
+        });
+        continue;
+      }
+
       const src = sprites[state].src;
       if (!src) {
         continue;
@@ -174,8 +186,38 @@ export class Player implements AABB {
 
     const image = this.spriteImages[state];
     const sprite = gameConfig.player.sprites[state];
+    const frameImages = Array.isArray(image) ? image : null;
 
-    if (image && image.complete && image.naturalWidth > 0) {
+    if (frameImages && frameImages.length > 0) {
+      const frameImage = frameImages[this.animFrame % frameImages.length];
+      if (frameImage.complete && frameImage.naturalWidth > 0) {
+        ctx.save();
+        if (this.facing === 'left') {
+          ctx.translate(this.x + this.width, this.y);
+          ctx.scale(-1, 1);
+          ctx.drawImage(frameImage, 0, 0, this.width, this.height);
+        } else {
+          ctx.drawImage(frameImage, this.x, this.y, this.width, this.height);
+        }
+        ctx.restore();
+        return;
+      }
+    }
+
+    if (image && !Array.isArray(image) && image.complete && image.naturalWidth > 0) {
+      if (sprite.frames <= 1) {
+        ctx.save();
+        if (this.facing === 'left') {
+          ctx.translate(this.x + this.width, this.y);
+          ctx.scale(-1, 1);
+          ctx.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight, 0, 0, this.width, this.height);
+        } else {
+          ctx.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight, this.x, this.y, this.width, this.height);
+        }
+        ctx.restore();
+        return;
+      }
+
       const sourceX = this.animFrame * sprite.frameWidth;
 
       ctx.save();

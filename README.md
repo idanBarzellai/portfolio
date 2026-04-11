@@ -96,10 +96,12 @@ Edit [src/data/gameConfig.ts](src/data/gameConfig.ts)
 - `player.width`, `player.height`
 - `player.sprites.idle|walk|jump|climb`
 	- `src`: sprite sheet path
+	- `frameSources`: optional list of per-frame images for frame-by-frame animation
 	- `frameWidth`, `frameHeight`
 	- `frames`, `fps`
 
-If `src` is not set, the game falls back to a simple built-in player render.
+If `frameSources` is set, the player uses those images in sequence for that state. If neither `src` nor `frameSources` is set, the game falls back to a simple built-in player render.
+Single-image states like idle can use `src` with `frames: 1`.
 
 ### 5) Replace Sound Effects
 
@@ -117,7 +119,11 @@ If `src` is not set, that sound is skipped.
 Put files under `dist/assets/...` and reference them as paths like:
 
 - `assets/backgrounds/projects-room.jpg`
-- `assets/player/walk.png`
+- `assets/Player/Walk/walk-1.svg`
+- `assets/Player/Walk/walk-2.svg`
+- `assets/Player/Walk/walk-3.svg`
+- `assets/Player/Walk/walk-4.svg`
+- `assets/Player/Idle/idle.svg`
 - `assets/sfx/jump.wav`
 
 ## What Is Already Implemented

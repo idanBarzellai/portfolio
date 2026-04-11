@@ -25,6 +25,7 @@ export interface SceneVisualConfig {
 
 export interface PlayerSpriteStateConfig {
   src?: string;
+  frameSources?: string[];
   frameWidth: number;
   frameHeight: number;
   frames: number;
@@ -189,8 +190,19 @@ export const gameConfig: GameConfig = {
     height: 52,
     sprites: {
       // Replace src paths with your own sprite sheets under dist/assets/...
-      idle: { src: undefined, frameWidth: 42, frameHeight: 52, frames: 4, fps: 6 },
-      walk: { src: undefined, frameWidth: 42, frameHeight: 52, frames: 6, fps: 10 },
+      idle: { src: 'assets/Player/Idle/idle.svg', frameWidth: 42, frameHeight: 52, frames: 1, fps: 1 },
+      walk: {
+        frameSources: [
+          'assets/Player/Walk/walk-1.svg',
+          'assets/Player/Walk/walk-2.svg',
+          'assets/Player/Walk/walk-3.svg',
+          'assets/Player/Walk/walk-4.svg',
+        ],
+        frameWidth: 42,
+        frameHeight: 52,
+        frames: 4,
+        fps: 10,
+      },
       jump: { src: undefined, frameWidth: 42, frameHeight: 52, frames: 2, fps: 4 },
       climb: { src: undefined, frameWidth: 42, frameHeight: 52, frames: 4, fps: 8 },
     },
