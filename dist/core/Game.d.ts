@@ -1,0 +1,75 @@
+/**
+ * Main Game Class
+ * Handles the game loop, rendering, and update logic.
+ */
+export declare class Game {
+    private canvas;
+    private ctx;
+    private input;
+    private player;
+    private audio;
+    private platforms;
+    private ropes;
+    private portals;
+    private animationFrameId;
+    private wasInteractPressed;
+    private activePortalHint;
+    private currentScene;
+    private imageCache;
+    private projectHitAreas;
+    private homeHitArea;
+    private cameraX;
+    private projectReelIndex;
+    private reelTouchStart;
+    private wasCarouselLeftPressed;
+    private wasCarouselRightPressed;
+    private debugPosition;
+    private debugVelocity;
+    private debugGrounded;
+    private debugLadder;
+    private debugScene;
+    private jumpSlider;
+    private moveSlider;
+    private climbSlider;
+    private jumpValue;
+    private moveValue;
+    private climbValue;
+    private wasGroundedLastFrame;
+    constructor(canvasId: string);
+    private initializePointerInteraction;
+    private initializeTouchControls;
+    private getCanvasCoordinates;
+    private isPointInArea;
+    private syncCanvasSize;
+    private initializeUI;
+    private configureTuningSliders;
+    private initializeMainScene;
+    private initializeSectionScene;
+    private getSceneTargetWidth;
+    private getCurrentSceneWidth;
+    private isCoarsePointerDevice;
+    private updateCamera;
+    private initializeScene;
+    private getSection;
+    private getImage;
+    private drawImageCover;
+    private cycleProject;
+    private renderHomeIcon;
+    private updateDebugPanel;
+    private update;
+    private renderSceneTitle;
+    private renderSectionList;
+    private renderProjectsGallery;
+    private renderWorkFactory;
+    private renderAcademicLibrary;
+    private renderLanguagesHangar;
+    private renderSkillsWorkshop;
+    private renderAboutRoom;
+    private renderSectionSceneContent;
+    private renderBackground;
+    private render;
+    private gameLoop;
+    start(): void;
+    stop(): void;
+}
+//# sourceMappingURL=Game.d.ts.map
