@@ -1,4 +1,4 @@
-# Portfolio Hub (Swipe First)
+# Portfolio Hub
 
 A mobile-first portfolio that works like a directional hub:
 
@@ -8,49 +8,53 @@ A mobile-first portfolio that works like a directional hub:
 - Down: Academic Experience
 - Up: Skills
 
-## How to run
+## Project files
 
-Because this app uses ES modules, run it with a local server (not by opening the file directly).
+- index.htm (main page)
+- src/app.js (JavaScript logic + content data)
+- src/styles.css (styling)
 
-Option 1 (Node):
+index.html is also included for compatibility, but npm dev opens index.htm.
+
+## Run locally with Node
+
+Install dependencies:
 
 ```bash
-npx serve .
+npm install
 ```
 
-Option 2 (Python):
+Start dev server:
 
 ```bash
-python -m http.server 8080
+npm run dev
 ```
 
-Then open the shown local URL.
+Then open:
 
-## Modular section positions
+```text
+http://127.0.0.1:5173/index.htm
+```
 
-Edit section coordinates in `src/config.js` under `SECTION_LAYOUT`.
+## What to edit
 
-Each section has an `(x, y)` coordinate:
+Open src/app.js and update:
 
-- `(0, 0)` is the hub center (About)
-- `x + 1` is right
-- `x - 1` is left
-- `y + 1` is down
-- `y - 1` is up
+- SECTION_LAYOUT: change section positions using x/y coordinates
+- SECTION_CONTENT: change text for About, Work, Academic, Skills
+- PROJECT_REELS: add image/video reels and links
 
-You can move sections by changing coordinates only. Navigation updates automatically.
+Coordinate rules:
 
-## Content editing
-
-- Text sections: edit `SECTION_CONTENT` in `src/config.js`
-- Projects reels: edit `PROJECT_REELS` in `src/config.js`
-  - Use `mediaType: "image"` or `mediaType: "video"`
-  - Set `mediaUrl` to your image/video URL
-  - Set `link` to your project page
+- (0, 0) is center
+- x + 1 is right
+- x - 1 is left
+- y + 1 is down
+- y - 1 is up
 
 ## Controls
 
 - Mobile: swipe
 - Desktop: arrow keys or on-screen direction buttons
 
-In Projects, vertical swipe is used for reel scrolling. Horizontal swipe can still move between sections.
+In Projects, vertical swipe is reserved for reel scrolling. Horizontal swipe still switches sections.

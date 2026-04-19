@@ -1,0 +1,13 @@
+{
+  "name": "portfolio-hub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Swipe-first portfolio hub",
+  "scripts": {
+    "dev": "live-server --port=5173 --open=index.htm --ignore=node_modules --no-browser",
+    "start": "npm run dev"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}
