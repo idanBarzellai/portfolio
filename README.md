@@ -1,197 +1,60 @@
-# Idan's Game Designer Portfolio
+# Portfolio Hub
 
-A browser platformer where the main world acts as a world-map hub and each portfolio domain is a dedicated themed scene.
+A mobile-first portfolio that works like a directional hub:
 
-## Core Vision
+- Center: About
+- Right: Projects (reels style)
+- Left: Work Experience
+- Down: Academic Experience
+- Up: Skills
 
-The portfolio should feel like a playable game, not a static page:
+## Project files
 
-1. Main scene with labeled platforms and ladders.
-2. A portal near each section platform.
-3. Press Up near a portal to enter a dedicated scene.
-4. Each scene visualizes portfolio information as world objects.
-5. Exit portal returns to the main scene.
+- index.htm (main page)
+- src/app.js (JavaScript logic + content data)
+- src/styles.css (styling)
 
-## Scene Design
+index.html is also included for compatibility, but npm dev opens index.htm.
 
-### Main Scene (Hub)
+## Run locally with Node
 
-- Side-scrolling platform layout with section labels above platforms.
-- Ladders support Up/Down movement and allow climbing through platform undersides.
-- Portals lead into thematic rooms.
-
-### Projects Scene (Gallery Room)
-
-- Gallery-style framed project cards.
-- Each card shows title, summary, and tags.
-- Represents all featured projects.
-
-### Work Experience Scene (Factory)
-
-- Factory floor with a conveyor-belt style composition.
-- Each workplace/role appears as an object station on the assembly line.
-
-### Academic Experience Scene (Library)
-
-- Library-style shelves and reference cards.
-- Each academic item appears as a book/reference section.
-
-### Languages Scene (Plane Hangar)
-
-- Plane/hangar themed composition.
-- Programming languages shown as labels around the aircraft.
-
-### Skills Scene (Blacksmith Workshop)
-
-- Forge/workshop composition with weapon-like displays.
-- Each weapon represents a key skill.
-
-## Controls
-
-- **Left/Right** or **A/D**: Move
-- **Up** or **W**: Jump
-- **Up/Down** or **W/S**: Climb ladders
-- **Up near portal**: Enter scene
-- **Up near Exit portal**: Return to main scene
-
-## HUD Layout
-
-- Controls and debug are now outside the game frame in a side HUD panel.
-- Game canvas stays clean for presentation and screenshots.
-
-## Easy Customization
-
-Use these files as your content/asset control center.
-
-### 1) Section Text + Images
-
-Edit [src/data/portfolioData.ts](src/data/portfolioData.ts)
-
-- `title`, `content`
-- `roomTitle`, `roomSubtitle`
-- `backgroundImage`
-- `items[]` with `title`, `description`, `image`
-- `projects[]` with `title`, `description`, `image`, `tags`, `link`
-
-### 2) Scene Backgrounds + Room Titles
-
-Edit [src/data/gameConfig.ts](src/data/gameConfig.ts)
-
-- `scenes.<sceneId>.roomTitle`
-- `scenes.<sceneId>.roomSubtitle`
-- `scenes.<sceneId>.backgroundImage`
-- `scenes.<sceneId>.backgroundGradient`
-
-### 3) Platform and Ladder Layout
-
-Edit [src/data/gameConfig.ts](src/data/gameConfig.ts)
-
-- `mainScene.platforms[]` for platform position/size/color/section mapping
-- `mainScene.ropes[]` for ladder position/height
-
-### 4) Player Look + Animations
-
-Edit [src/data/gameConfig.ts](src/data/gameConfig.ts)
-
-- `player.width`, `player.height`
-- `player.sprites.idle|walk|jump|climb`
-	- `src`: sprite sheet path
-	- `frameSources`: optional list of per-frame images for frame-by-frame animation
-	- `frameWidth`, `frameHeight`
-	- `frames`, `fps`
-
-If `frameSources` is set, the player uses those images in sequence for that state. If neither `src` nor `frameSources` is set, the game falls back to a simple built-in player render.
-Single-image states like idle can use `src` with `frames: 1`.
-
-### 5) Replace Sound Effects
-
-Edit [src/data/gameConfig.ts](src/data/gameConfig.ts)
-
-- `audio.portalEnter.src`
-- `audio.walk.src`
-- `audio.jump.src`
-- `volume` and `loop`
-
-If `src` is not set, that sound is skipped.
-
-### Asset Path Tip
-
-Put files under `dist/assets/...` and reference them as paths like:
-
-- `assets/backgrounds/projects-room.jpg`
-- `assets/Player/Walk/walk-1.svg`
-- `assets/Player/Walk/walk-2.svg`
-- `assets/Player/Walk/walk-3.svg`
-- `assets/Player/Walk/walk-4.svg`
-- `assets/Player/Idle/idle.svg`
-- `assets/sfx/jump.wav`
-
-## What Is Already Implemented
-
-- [x] Main hub scene with labeled section platforms
-- [x] Ladder climbing with upward platform pass-through behavior
-- [x] Portal entry system using Up interaction
-- [x] Dedicated scene rendering for:
-	- [x] Projects gallery
-	- [x] Work experience factory
-	- [x] Academic experience library
-	- [x] Languages plane hangar
-	- [x] Skills blacksmith workshop
-- [x] Exit portal back to main scene
-
-## Tech Stack
-
-- TypeScript
-- HTML5 Canvas
-- Webpack
-- CSS
-
-## Getting Started
-
-### Install
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-### Run Dev Server
+Start dev server:
 
 ```bash
 npm run dev
 ```
 
-### Production Build
-
-```bash
-npm run build
-```
-
-## Project Structure
+Then open:
 
 ```text
-src/
-	core/
-		Game.ts
-		Input.ts
-		Physics.ts
-	data/
-		gameConfig.ts
-		portfolioData.ts
-	entities/
-		Platform.ts
-		Player.ts
-		Portal.ts
-		Rope.ts
-	index.ts
+http://127.0.0.1:5173/index.htm
 ```
 
-## Next Enhancements
+## What to edit
 
-1. Add camera transitions and scene fade-in/out when entering portals.
-2. Make project cards clickable in the Projects scene.
-3. Add ambient audio per scene.
-4. Add NPCs and interactive tooltips.
+Open src/app.js and update:
 
-## Author
+- SECTION_LAYOUT: change section positions using x/y coordinates
+- SECTION_CONTENT: change text for About, Work, Academic, Skills
+- PROJECT_REELS: add image/video reels and links
 
-Idan Barzellai
+Coordinate rules:
+
+- (0, 0) is center
+- x + 1 is right
+- x - 1 is left
+- y + 1 is down
+- y - 1 is up
+
+## Controls
+
+- Mobile: swipe
+- Desktop: arrow keys or on-screen direction buttons
+
+In Projects, vertical swipe is reserved for reel scrolling. Horizontal swipe still switches sections.
