@@ -40,12 +40,12 @@ body {
 }
 
 .topbar {
-  background: var(--card);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--card-border);
-  border-radius: 1rem;
+  background: transparent;
+  backdrop-filter: none;
+  border: 0;
+  border-radius: 0;
   padding: 0.9rem 1rem;
-  box-shadow: var(--shadow);
+  box-shadow: none;
   animation: fade-in 420ms ease;
 }
 
@@ -74,10 +74,10 @@ h1 {
 
 .section-card {
   height: min(74vh, 760px);
-  background: var(--card);
-  border: 1px solid var(--card-border);
-  border-radius: 1.15rem;
-  box-shadow: var(--shadow);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   overflow: hidden;
   animation: raise-in 330ms ease;
 }
@@ -115,16 +115,48 @@ h1 {
 .projects-section {
   position: relative;
   display: grid;
-  align-content: start;
+  grid-template-rows: auto auto auto 1fr;
   background: linear-gradient(180deg, #12121a 0%, #1d1b2e 60%, #25243a 100%);
   padding: 0.8rem;
+  gap: 0.6rem;
 }
 
 .project-controls {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.project-counter {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.project-progress {
+  display: flex;
+  justify-content: center;
   gap: 0.45rem;
-  margin: 0.4rem 0 0.6rem;
+  flex-wrap: wrap;
+}
+
+.project-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 0;
+  cursor: pointer;
+  transition: transform 160ms ease, background-color 160ms ease, width 160ms ease;
+}
+
+.project-dot.is-active {
+  width: 1.2rem;
+  background: #ffffff;
+  transform: scale(1.05);
 }
 
 .carousel-btn {
@@ -138,27 +170,25 @@ h1 {
   cursor: pointer;
 }
 
-.reels {
-  height: calc(100% - 5rem);
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  overscroll-behavior: contain;
-}
-
-.reels-track {
-  display: flex;
+.project-stage {
   height: 100%;
+  min-height: 0;
 }
 
-.reel-item {
-  min-width: 100%;
+.project-card {
   height: 100%;
   position: relative;
-  scroll-snap-align: start;
   background: #111;
-  border-radius: 0.9rem;
+  border-radius: 0;
   overflow: hidden;
+}
+
+.project-card--enter-next {
+  animation: project-enter-next 320ms ease both;
+}
+
+.project-card--enter-prev {
+  animation: project-enter-prev 320ms ease both;
 }
 
 .reel-media {
@@ -166,6 +196,10 @@ h1 {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.reel-media--video {
+  background: #000;
 }
 
 .reel-overlay {
@@ -202,15 +236,15 @@ h1 {
 }
 
 .hint-bar {
-  background: var(--card);
-  border: 1px solid var(--card-border);
-  border-radius: 1rem;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.45rem;
   align-items: center;
   padding: 0.5rem;
-  box-shadow: var(--shadow);
+  box-shadow: none;
 }
 
 .hint-center {
@@ -266,6 +300,30 @@ h1 {
   from {
     opacity: 0;
     transform: translateY(12px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes project-enter-next {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes project-enter-prev {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.985);
   }
 
   to {

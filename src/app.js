@@ -50,6 +50,8 @@ const DEFAULT_PROJECT_REELS = [
 ];
 
 let projectReels = [...DEFAULT_PROJECT_REELS];
+let activeProjectIndex = 0;
+let projectTransitionDirection = 1;
 
 const host = document.getElementById("section-host");
 const titleEl = document.getElementById("section-title");
@@ -132,7 +134,7 @@ function renderTextSection(sectionId) {
 function buildProjectMedia(item) {
   if (item.mediaType === "video") {
     return `
-      <video class="reel-media" src="${item.media}" controls playsinline preload="metadata"></video>
+      <video class="reel-media reel-media--video" src="${item.media}" autoplay loop muted playsinline preload="metadata"></video>
     `;
   }
 
@@ -141,37 +143,94 @@ function buildProjectMedia(item) {
   `;
 }
 
+function getActiveProject() {
+  if (projectReels.length === 0) return null;
+  return projectReels[activeProjectIndex % projectReels.length];
+}
+
+function renderProjectCard(item, direction = 1) {
+  const animationClass = direction >= 0 ? "project-card--enter-next" : "project-card--enter-prev";
+  return `
+    <article class="project-card ${animationClass}">
+      ${buildProjectMedia(item)}
+      <div class="reel-overlay">
+        <h3>${item.name}</h3>
+        <p>${item.description}</p>
+        <a href="${item.link}" target="_blank" rel="noopener noreferrer">Open project</a>
+      </div>
+    </article>
+  `;
+}
+
 function renderProjectsSection() {
   const wrapper = document.createElement("section");
   wrapper.className = "projects-section section-card";
 
-  const reelHtml = projectReels.map(
-    (item) => `
-      <article class="reel-item">
-        ${buildProjectMedia(item)}
-        <div class="reel-overlay">
-          <h3>${item.name}</h3>
-          <p>${item.description}</p>
-          <a href="${item.link}" target="_blank" rel="noopener noreferrer">Open project</a>
-        </div>
-      </article>
-    `
-  ).join("");
+  const activeProject = getActiveProject();
+  const projectCount = projectReels.length;
+  const projectIndicators = projectReels
+    .map(
+      (_, index) => `<button type="button" class="project-dot${index === activeProjectIndex ? " is-active" : ""}" data-project-index="${index}" aria-label="Go to project ${index + 1}"></button>`
+    )
+    .join("");
 
   wrapper.innerHTML = `
     ${renderHomeButton()}
     <div class="project-controls">
-      <button type="button" class="carousel-btn" data-carousel-dir="prev" aria-label="Previous project">←</button>
-      <button type="button" class="carousel-btn" data-carousel-dir="next" aria-label="Next project">→</button>
+      <button type="button" class="carousel-btn" data-project-dir="prev" aria-label="Previous project">↑</button>
+      <div class="project-counter" data-project-counter>${activeProjectIndex + 1} / ${projectCount}</div>
+      <button type="button" class="carousel-btn" data-project-dir="next" aria-label="Next project">↓</button>
     </div>
-    <div class="reels" aria-label="Project carousel" tabindex="0">
-      <div class="reels-track">
-        ${reelHtml}
-      </div>
+    <div class="project-progress" data-project-progress>
+      ${projectIndicators}
+    </div>
+    <div class="project-stage" data-project-stage aria-label="Project reel">
+      ${activeProject ? renderProjectCard(activeProject, projectTransitionDirection) : ""}
     </div>
   `;
 
   return wrapper;
+}
+
+function updateProjectView() {
+  const projectStage = host.querySelector("[data-project-stage]");
+  const projectCounter = host.querySelector("[data-project-counter]");
+  const projectProgress = host.querySelector("[data-project-progress]");
+  const activeProject = getActiveProject();
+
+  if (projectStage && activeProject) {
+    projectStage.innerHTML = renderProjectCard(activeProject, projectTransitionDirection);
+  }
+
+  if (projectCounter) {
+    projectCounter.textContent = `${activeProjectIndex + 1} / ${projectReels.length}`;
+  }
+
+  if (projectProgress) {
+    projectProgress.innerHTML = projectReels
+      .map(
+        (_, index) => `<button type="button" class="project-dot${index === activeProjectIndex ? " is-active" : ""}" data-project-index="${index}" aria-label="Go to project ${index + 1}"></button>`
+      )
+      .join("");
+
+    projectProgress.querySelectorAll("[data-project-index]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const index = Number(button.dataset.projectIndex);
+        if (Number.isNaN(index)) return;
+        projectTransitionDirection = index >= activeProjectIndex ? 1 : -1;
+        activeProjectIndex = index;
+        updateProjectView();
+      });
+    });
+  }
+}
+
+function moveProject(step) {
+  if (projectReels.length === 0) return;
+
+  projectTransitionDirection = step;
+  activeProjectIndex = (activeProjectIndex + step + projectReels.length) % projectReels.length;
+  updateProjectView();
 }
 
 async function loadProjectsFromJson() {
@@ -189,10 +248,12 @@ async function loadProjectsFromJson() {
     projectReels = projects.map((project) => ({
       name: project.name ?? "Untitled project",
       media: project.media,
-      mediaType: project.mediaType === "video" ? "video" : "image",
+      mediaType: project.mediaType === "video" ? "video" : project.mediaType === "gif" ? "gif" : "image",
       description: project.description ?? "",
       link: project.link ?? "#",
     }));
+
+    activeProjectIndex = Math.min(activeProjectIndex, projectReels.length - 1);
 
     if (activeSectionId === "projects") {
       renderActiveSection();
@@ -213,14 +274,24 @@ function bindSectionActions() {
 
   if (activeSectionId !== "projects") return;
 
-  const reels = host.querySelector(".reels");
-  if (!reels) return;
-  const controls = host.querySelectorAll("[data-carousel-dir]");
+  const controls = host.querySelectorAll("[data-project-dir]");
 
   controls.forEach((button) => {
     button.addEventListener("click", () => {
-      const direction = button.dataset.carouselDir === "next" ? 1 : -1;
-      reels.scrollBy({ left: reels.clientWidth * direction, behavior: "smooth" });
+      const direction = button.dataset.projectDir === "next" ? 1 : -1;
+      moveProject(direction);
+    });
+  });
+
+  const progressDots = host.querySelectorAll("[data-project-index]");
+  progressDots.forEach((dot) => {
+    dot.addEventListener("click", () => {
+      const index = Number(dot.dataset.projectIndex);
+      if (Number.isNaN(index)) return;
+
+      projectTransitionDirection = index >= activeProjectIndex ? 1 : -1;
+      activeProjectIndex = index;
+      updateProjectView();
     });
   });
 }
@@ -257,18 +328,20 @@ function move(direction) {
   const nextSection = getNeighbor(activeSectionId, direction);
   if (!nextSection) return;
 
+  if (nextSection === "projects" && activeSectionId !== "projects") {
+    activeProjectIndex = 0;
+  }
+
   activeSectionId = nextSection;
   renderActiveSection();
 }
 
-function shouldUseGlobalSwipe(direction, absX, absY, startedInReels) {
+function shouldUseGlobalSwipe(direction, startedInProjects) {
   if (activeSectionId !== "projects") return true;
 
-  if (startedInReels) {
-    return false;
-  }
+  if (!startedInProjects) return true;
 
-  return true;
+  return direction === "left" || direction === "right";
 }
 
 function onTouchStart(event) {
@@ -276,7 +349,7 @@ function onTouchStart(event) {
   touchStart = {
     x: touch.clientX,
     y: touch.clientY,
-    startedInReels: Boolean(event.target.closest(".reels")),
+    startedInProjects: Boolean(event.target.closest(".projects-section")),
   };
 }
 
@@ -288,7 +361,7 @@ function onTouchEnd(event) {
   const deltaY = touch.clientY - touchStart.y;
   const absX = Math.abs(deltaX);
   const absY = Math.abs(deltaY);
-  const startedInReels = touchStart.startedInReels;
+  const startedInProjects = touchStart.startedInProjects;
 
   touchStart = null;
 
@@ -297,7 +370,12 @@ function onTouchEnd(event) {
   const isHorizontal = absX > absY;
   const direction = isHorizontal ? (deltaX > 0 ? "right" : "left") : (deltaY > 0 ? "down" : "up");
 
-  if (!shouldUseGlobalSwipe(direction, absX, absY, startedInReels)) return;
+  if (activeSectionId === "projects" && startedInProjects && !isHorizontal) {
+    moveProject(deltaY < 0 ? 1 : -1);
+    return;
+  }
+
+  if (!shouldUseGlobalSwipe(direction, startedInProjects)) return;
   move(direction);
 }
 
@@ -313,6 +391,12 @@ function onKeyDown(event) {
   if (!direction) return;
 
   event.preventDefault();
+
+  if (activeSectionId === "projects" && (direction === "up" || direction === "down")) {
+    moveProject(direction === "up" ? -1 : 1);
+    return;
+  }
+
   move(direction);
 }
 
