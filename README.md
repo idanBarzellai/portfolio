@@ -10,11 +10,9 @@ A mobile-first portfolio that works like a directional hub:
 
 ## Project files
 
-- index.htm (main page)
+- index.html (main page)
 - src/app.js (JavaScript logic + content data)
 - src/styles.css (styling)
-
-index.html is also included for compatibility, but npm dev opens index.htm.
 
 ## Run locally with Node
 
@@ -33,7 +31,7 @@ npm run dev
 Then open:
 
 ```text
-http://127.0.0.1:5173/index.htm
+http://127.0.0.1:5173/index.html
 ```
 
 ## What to edit
@@ -42,7 +40,15 @@ Open src/app.js and update:
 
 - SECTION_LAYOUT: change section positions using x/y coordinates
 - SECTION_CONTENT: change text for About, Work, Academic, Skills
-- PROJECT_REELS: add image/video reels and links
+- src/projects.json: add or edit project entries
+
+Projects are now loaded from [src/projects.json](src/projects.json), so you can add or edit items there with:
+
+- name
+- mediaType (`image` or `gif` or `video`)
+- media (image, gif, or video URL)
+- description
+- link
 
 Coordinate rules:
 

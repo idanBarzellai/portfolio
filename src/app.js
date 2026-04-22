@@ -25,29 +25,31 @@ const SECTION_CONTENT = {
   },
 };
 
-const PROJECT_REELS = [
+const DEFAULT_PROJECT_REELS = [
   {
-    title: "Project One",
-    summary: "A short one-line summary of what the project does and why it matters.",
-    mediaUrl: "https://images.unsplash.com/photo-1483058712412-4245e9b90334?auto=format&fit=crop&w=900&q=80",
+    name: "Project One",
+    media: "https://images.unsplash.com/photo-1483058712412-4245e9b90334?auto=format&fit=crop&w=900&q=80",
     mediaType: "image",
+    description: "A short one-line summary of what the project does and why it matters.",
     link: "https://example.com/project-one",
   },
   {
-    title: "Project Two",
-    summary: "Describe your stack and one concrete user or business outcome.",
-    mediaUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80",
+    name: "Project Two",
+    media: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80",
     mediaType: "image",
+    description: "Describe your stack and one concrete user or business outcome.",
     link: "https://example.com/project-two",
   },
   {
-    title: "Project Three",
-    summary: "Add a demo video link or keep this as an image-based preview.",
-    mediaUrl: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=900&q=80",
+    name: "Project Three",
+    media: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=900&q=80",
     mediaType: "image",
+    description: "Add a demo video link or keep this as an image-based preview.",
     link: "https://example.com/project-three",
   },
 ];
+
+let projectReels = [...DEFAULT_PROJECT_REELS];
 
 const host = document.getElementById("section-host");
 const titleEl = document.getElementById("section-title");
@@ -130,12 +132,12 @@ function renderTextSection(sectionId) {
 function buildProjectMedia(item) {
   if (item.mediaType === "video") {
     return `
-      <video class="reel-media" src="${item.mediaUrl}" controls playsinline preload="metadata"></video>
+      <video class="reel-media" src="${item.media}" controls playsinline preload="metadata"></video>
     `;
   }
 
   return `
-    <img class="reel-media" src="${item.mediaUrl}" alt="${item.title} preview" loading="lazy" />
+    <img class="reel-media" src="${item.media}" alt="${item.name} preview" loading="lazy" />
   `;
 }
 
@@ -143,13 +145,13 @@ function renderProjectsSection() {
   const wrapper = document.createElement("section");
   wrapper.className = "projects-section section-card";
 
-  const reelHtml = PROJECT_REELS.map(
+  const reelHtml = projectReels.map(
     (item) => `
       <article class="reel-item">
         ${buildProjectMedia(item)}
         <div class="reel-overlay">
-          <h3>${item.title}</h3>
-          <p>${item.summary}</p>
+          <h3>${item.name}</h3>
+          <p>${item.description}</p>
           <a href="${item.link}" target="_blank" rel="noopener noreferrer">Open project</a>
         </div>
       </article>
@@ -170,6 +172,34 @@ function renderProjectsSection() {
   `;
 
   return wrapper;
+}
+
+async function loadProjectsFromJson() {
+  try {
+    const response = await fetch("./src/projects.json", { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`Failed to load projects: ${response.status}`);
+    }
+
+    const projects = await response.json();
+    if (!Array.isArray(projects) || projects.length === 0) {
+      throw new Error("Project JSON must contain a non-empty array.");
+    }
+
+    projectReels = projects.map((project) => ({
+      name: project.name ?? "Untitled project",
+      media: project.media,
+      mediaType: project.mediaType === "video" ? "video" : "image",
+      description: project.description ?? "",
+      link: project.link ?? "#",
+    }));
+
+    if (activeSectionId === "projects") {
+      renderActiveSection();
+    }
+  } catch (error) {
+    projectReels = [...DEFAULT_PROJECT_REELS];
+  }
 }
 
 function bindSectionActions() {
@@ -297,4 +327,5 @@ function bindEvents() {
 }
 
 bindEvents();
+loadProjectsFromJson();
 renderActiveSection();

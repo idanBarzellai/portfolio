@@ -4,7 +4,7 @@
   "private": true,
   "description": "Swipe-first portfolio hub",
   "scripts": {
-    "dev": "live-server --port=5173 --open=index.htm --ignore=node_modules --no-browser",
+    "dev": "live-server --port=5173 --open=index.html --ignore=node_modules --no-browser",
     "start": "npm run dev"
   },
   "devDependencies": {

@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Portfolio Hub",
+    "mediaType": "image",
+    "media": "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?auto=format&fit=crop&w=1200&q=80",
+    "description": "A swipe-first portfolio with directional navigation and a reels-style projects view.",
+    "link": "https://example.com/portfolio-hub"
+  },
+  {
+    "name": "AI Study Helper",
+    "mediaType": "gif",
+    "media": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbG4xemQ1bDk4aGQ2a2JmYjJ1d2x6Y3J6N2Q2Z3M0bWJ5ZTVuZ3E5NyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26ufdipQqU2lhNA4g/giphy.gif",
+    "description": "A small AI tool that summarizes notes and suggests study questions.",
+    "link": "https://example.com/ai-study-helper"
+  },
+  {
+    "name": "Task Tracker",
+    "mediaType": "image",
+    "media": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
+    "description": "A focused task app for organizing work, deadlines, and daily priorities.",
+    "link": "https://example.com/task-tracker"
+  }
+]
