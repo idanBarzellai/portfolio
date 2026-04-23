@@ -52,9 +52,12 @@ const DEFAULT_PROJECT_REELS = [
 let projectReels = [...DEFAULT_PROJECT_REELS];
 let activeProjectIndex = 0;
 let projectTransitionDirection = 1;
+let projectAutoAdvanceTimer = null;
+const PROJECT_AUTO_ADVANCE_MS = 5500;
 
 const host = document.getElementById("section-host");
 const titleEl = document.getElementById("section-title");
+const headerHomeButton = document.getElementById("header-home-btn");
 const hintButtons = Array.from(document.querySelectorAll(".hint-btn"));
 
 const SWIPE_MIN_DISTANCE = 40;
@@ -112,18 +115,12 @@ function getNeighbor(sectionId, direction) {
   return column[nextIndex].id;
 }
 
-function renderHomeButton() {
-  if (activeSectionId === "about") return "";
-  return `<button type="button" class="home-btn" data-home="true">Home</button>`;
-}
-
 function renderTextSection(sectionId) {
   const content = SECTION_CONTENT[sectionId];
   const card = document.createElement("section");
   card.className = "text-section section-card";
 
   card.innerHTML = `
-    ${renderHomeButton()}
     <h2>${content.heading}</h2>
     <p>${content.body}</p>
   `;
@@ -148,16 +145,86 @@ function getActiveProject() {
   return projectReels[activeProjectIndex % projectReels.length];
 }
 
+function normalizeProjectMedia(project) {
+  if (Array.isArray(project.mediaItems) && project.mediaItems.length > 0) {
+    return project.mediaItems.map((item) => ({
+      media: item.media ?? item.src ?? "",
+      mediaType: item.mediaType ?? item.type ?? "image",
+    }));
+  }
+
+  if (Array.isArray(project.media) && project.media.length > 0) {
+    return project.media.map((item) => {
+      if (typeof item === "string") {
+        return { media: item, mediaType: project.mediaType ?? "image" };
+      }
+
+      return {
+        media: item.media ?? item.src ?? "",
+        mediaType: item.mediaType ?? item.type ?? project.mediaType ?? "image",
+      };
+    });
+  }
+
+  return [
+    {
+      media: project.media ?? "",
+      mediaType: project.mediaType ?? "image",
+    },
+  ];
+}
+
+function getActiveProjectMedia(project) {
+  if (!project || !Array.isArray(project.mediaItems) || project.mediaItems.length === 0) {
+    return null;
+  }
+
+  const mediaIndex = project.activeMediaIndex ?? 0;
+  return project.mediaItems[mediaIndex % project.mediaItems.length];
+}
+
+function renderProjectMediaPager(project) {
+  if (!project || !Array.isArray(project.mediaItems) || project.mediaItems.length < 2) {
+    return "";
+  }
+
+  return `
+    <div class="project-media-pager" data-project-media-pager>
+      ${project.mediaItems
+        .map(
+          (_, index) => `<button type="button" class="project-media-dot${index === (project.activeMediaIndex ?? 0) ? " is-active" : ""}" data-project-media-index="${index}" aria-label="Show media ${index + 1}"></button>`
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function renderProjectTimer() {
+  return `
+    <div class="project-timer" aria-hidden="true">
+      <span class="project-timer-fill"></span>
+    </div>
+  `;
+}
+
 function renderProjectCard(item, direction = 1) {
   const animationClass = direction >= 0 ? "project-card--enter-next" : "project-card--enter-prev";
+  const activeMedia = getActiveProjectMedia(item) ?? { media: item.media, mediaType: item.mediaType };
+  const hasMultipleMedia = Array.isArray(item.mediaItems) && item.mediaItems.length > 1;
   return `
-    <article class="project-card ${animationClass}">
-      ${buildProjectMedia(item)}
+    <article class="project-card ${animationClass}" data-project-card tabindex="0" role="button" aria-label="${hasMultipleMedia ? "Tap to change project media" : "Project preview"}">
+      ${renderProjectTimer()}
+      ${buildProjectMedia(activeMedia)}
       <div class="reel-overlay">
-        <h3>${item.name}</h3>
-        <p>${item.description}</p>
-        <a href="${item.link}" target="_blank" rel="noopener noreferrer">Open project</a>
+        <div class="reel-copy">
+          <h3>${item.name}</h3>
+          <p>${item.description}</p>
+        </div>
+        <div class="reel-actions">
+          <a href="${item.link}" target="_blank" rel="noopener noreferrer">Open project</a>
+        </div>
       </div>
+      ${renderProjectMediaPager(item)}
     </article>
   `;
 }
@@ -175,7 +242,6 @@ function renderProjectsSection() {
     .join("");
 
   wrapper.innerHTML = `
-    ${renderHomeButton()}
     <div class="project-controls">
       <button type="button" class="carousel-btn" data-project-dir="prev" aria-label="Previous project">↑</button>
       <div class="project-counter" data-project-counter>${activeProjectIndex + 1} / ${projectCount}</div>
@@ -192,6 +258,30 @@ function renderProjectsSection() {
   return wrapper;
 }
 
+function resetProjectAutoAdvanceTimer() {
+  if (projectAutoAdvanceTimer) {
+    window.clearTimeout(projectAutoAdvanceTimer);
+  }
+
+  if (activeSectionId !== "projects" || projectReels.length < 2) {
+    projectAutoAdvanceTimer = null;
+    return;
+  }
+
+  projectAutoAdvanceTimer = window.setTimeout(() => {
+    if (activeSectionId !== "projects") return;
+    moveProject(1);
+    resetProjectAutoAdvanceTimer();
+  }, PROJECT_AUTO_ADVANCE_MS);
+}
+
+function stopProjectAutoAdvanceTimer() {
+  if (projectAutoAdvanceTimer) {
+    window.clearTimeout(projectAutoAdvanceTimer);
+    projectAutoAdvanceTimer = null;
+  }
+}
+
 function updateProjectView() {
   const projectStage = host.querySelector("[data-project-stage]");
   const projectCounter = host.querySelector("[data-project-counter]");
@@ -200,6 +290,30 @@ function updateProjectView() {
 
   if (projectStage && activeProject) {
     projectStage.innerHTML = renderProjectCard(activeProject, projectTransitionDirection);
+
+    const projectCard = projectStage.querySelector("[data-project-card]");
+    if (projectCard) {
+      projectCard.addEventListener("click", (event) => {
+        if (event.target.closest("a, button")) return;
+
+        if (!activeProject.mediaItems || activeProject.mediaItems.length < 2) return;
+
+        activeProject.activeMediaIndex = ((activeProject.activeMediaIndex ?? 0) + 1) % activeProject.mediaItems.length;
+        updateProjectView();
+        resetProjectAutoAdvanceTimer();
+      });
+
+      projectCard.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+
+        if (!activeProject.mediaItems || activeProject.mediaItems.length < 2) return;
+
+        event.preventDefault();
+        activeProject.activeMediaIndex = ((activeProject.activeMediaIndex ?? 0) + 1) % activeProject.mediaItems.length;
+        updateProjectView();
+        resetProjectAutoAdvanceTimer();
+      });
+    }
   }
 
   if (projectCounter) {
@@ -220,6 +334,7 @@ function updateProjectView() {
         projectTransitionDirection = index >= activeProjectIndex ? 1 : -1;
         activeProjectIndex = index;
         updateProjectView();
+        resetProjectAutoAdvanceTimer();
       });
     });
   }
@@ -231,6 +346,7 @@ function moveProject(step) {
   projectTransitionDirection = step;
   activeProjectIndex = (activeProjectIndex + step + projectReels.length) % projectReels.length;
   updateProjectView();
+  resetProjectAutoAdvanceTimer();
 }
 
 async function loadProjectsFromJson() {
@@ -251,6 +367,8 @@ async function loadProjectsFromJson() {
       mediaType: project.mediaType === "video" ? "video" : project.mediaType === "gif" ? "gif" : "image",
       description: project.description ?? "",
       link: project.link ?? "#",
+      mediaItems: normalizeProjectMedia(project),
+      activeMediaIndex: 0,
     }));
 
     activeProjectIndex = Math.min(activeProjectIndex, projectReels.length - 1);
@@ -259,19 +377,15 @@ async function loadProjectsFromJson() {
       renderActiveSection();
     }
   } catch (error) {
-    projectReels = [...DEFAULT_PROJECT_REELS];
+    projectReels = DEFAULT_PROJECT_REELS.map((project) => ({
+      ...project,
+      mediaItems: normalizeProjectMedia(project),
+      activeMediaIndex: 0,
+    }));
   }
 }
 
 function bindSectionActions() {
-  const homeButton = host.querySelector("[data-home='true']");
-  if (homeButton) {
-    homeButton.addEventListener("click", () => {
-      activeSectionId = "about";
-      renderActiveSection();
-    });
-  }
-
   if (activeSectionId !== "projects") return;
 
   const controls = host.querySelectorAll("[data-project-dir]");
@@ -296,6 +410,11 @@ function bindSectionActions() {
   });
 }
 
+function updateHeaderHomeButton() {
+  if (!headerHomeButton) return;
+  headerHomeButton.classList.toggle("is-hidden", activeSectionId === "about");
+}
+
 function updateHints() {
   for (const button of hintButtons) {
     const dir = button.dataset.dir;
@@ -307,7 +426,12 @@ function updateHints() {
 function renderActiveSection() {
   const current = SECTION_LAYOUT[activeSectionId];
   titleEl.textContent = current.title;
+  updateHeaderHomeButton();
   host.classList.add("is-transitioning");
+
+  if (activeSectionId !== "projects") {
+    stopProjectAutoAdvanceTimer();
+  }
 
   window.setTimeout(() => {
     host.innerHTML = "";
@@ -321,6 +445,10 @@ function renderActiveSection() {
     bindSectionActions();
     host.classList.remove("is-transitioning");
     updateHints();
+
+    if (activeSectionId === "projects") {
+      resetProjectAutoAdvanceTimer();
+    }
   }, 130);
 }
 
@@ -375,6 +503,11 @@ function onTouchEnd(event) {
     return;
   }
 
+  if (activeSectionId === "projects" && startedInProjects && isHorizontal) {
+    moveProject(deltaX > 0 ? -1 : 1);
+    return;
+  }
+
   if (!shouldUseGlobalSwipe(direction, startedInProjects)) return;
   move(direction);
 }
@@ -404,6 +537,13 @@ function bindEvents() {
   window.addEventListener("touchstart", onTouchStart, { passive: true });
   window.addEventListener("touchend", onTouchEnd, { passive: true });
   window.addEventListener("keydown", onKeyDown);
+
+  if (headerHomeButton) {
+    headerHomeButton.addEventListener("click", () => {
+      activeSectionId = "about";
+      renderActiveSection();
+    });
+  }
 
   hintButtons.forEach((button) => {
     button.addEventListener("click", () => move(button.dataset.dir));
