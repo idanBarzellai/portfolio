@@ -58,6 +58,7 @@ const PROJECT_AUTO_ADVANCE_MS = 5500;
 const host = document.getElementById("section-host");
 const titleEl = document.getElementById("section-title");
 const headerHomeButton = document.getElementById("header-home-btn");
+const hintBar = document.querySelector(".hint-bar");
 const hintButtons = Array.from(document.querySelectorAll(".hint-btn"));
 
 const SWIPE_MIN_DISTANCE = 40;
@@ -384,6 +385,14 @@ function updateHeaderHomeButton() {
 }
 
 function updateHints() {
+  if (hintBar) {
+    hintBar.classList.toggle("is-hidden", activeSectionId !== "about");
+  }
+
+  if (activeSectionId !== "about") {
+    return;
+  }
+
   for (const button of hintButtons) {
     const dir = button.dataset.dir;
     const neighbor = getNeighbor(activeSectionId, dir);
@@ -463,11 +472,22 @@ function onTouchEnd(event) {
 
   if (Math.max(absX, absY) < SWIPE_MIN_DISTANCE) return;
 
+  if (activeSectionId !== "about") {
+    activeSectionId = "about";
+    renderActiveSection();
+    return;
+  }
+
   const isHorizontal = absX > absY;
   const direction = isHorizontal ? (deltaX > 0 ? "right" : "left") : (deltaY > 0 ? "down" : "up");
 
   if (activeSectionId === "projects" && startedInProjects && !isHorizontal) {
     moveProject(deltaY < 0 ? 1 : -1);
+    return;
+  }
+
+  if (activeSectionId === "projects" && startedInProjects && isHorizontal) {
+    move(deltaX > 0 ? "left" : "right");
     return;
   }
 
@@ -487,6 +507,12 @@ function onKeyDown(event) {
   if (!direction) return;
 
   event.preventDefault();
+
+  if (activeSectionId !== "about") {
+    activeSectionId = "about";
+    renderActiveSection();
+    return;
+  }
 
   if (activeSectionId === "projects" && (direction === "up" || direction === "down")) {
     moveProject(direction === "up" ? -1 : 1);
