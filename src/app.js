@@ -61,6 +61,7 @@ let activeProjectIndex = 0;
 let projectTransitionDirection = 1;
 let projectAutoAdvanceTimer = null;
 const PROJECT_AUTO_ADVANCE_MS = 30000;
+const preloadedMediaSources = new Set();
 
 const host = document.getElementById("section-host");
 const titleEl = document.getElementById("section-title");
@@ -144,7 +145,7 @@ function buildProjectMedia(item) {
   }
 
   return `
-    <img class="reel-media" src="${item.media}" alt="${item.name} preview" loading="lazy" />
+    <img class="reel-media" src="${item.media}" alt="${item.name} preview" loading="eager" decoding="async" />
   `;
 }
 
@@ -234,12 +235,12 @@ function renderProjectTimer(project) {
 }
 
 function renderProjectCard(item, direction = 1) {
-  const animationClass = direction >= 0 ? "project-card--enter-next" : "project-card--enter-prev";
+  const animationClass = direction > 0 ? "project-card--enter-next" : direction < 0 ? "project-card--enter-prev" : "";
   const activeMedia = getActiveProjectMedia(item) ?? { media: item.media, mediaType: item.mediaType };
   const hasProjectLink = typeof item.link === "string" && item.link.trim() !== "" && item.link.trim() !== "#";
 
   return `
-    <article class="project-card ${animationClass}" data-project-card aria-label="Project preview">
+    <article class="project-card${animationClass ? ` ${animationClass}` : ""}" data-project-card aria-label="Project preview">
       ${renderProjectTimer(item)}
       ${buildProjectMedia(activeMedia)}
       <div class="reel-overlay">
@@ -305,6 +306,7 @@ function resetProjectAutoAdvanceTimer() {
         return;
       }
 
+      projectTransitionDirection = 0;
       updateProjectView();
       resetProjectAutoAdvanceTimer();
       return;
@@ -321,6 +323,22 @@ function stopProjectAutoAdvanceTimer() {
   }
 }
 
+function advanceProjectImageStep(project, advanceProjectOnWrap = false) {
+  if (!isImageOnlyProjectGallery(project)) return;
+
+  const nextIndex = ((project.activeMediaIndex ?? 0) + 1) % project.mediaItems.length;
+  project.activeMediaIndex = nextIndex;
+
+  if (advanceProjectOnWrap && nextIndex === 0) {
+    moveProject(1);
+    return;
+  }
+
+  projectTransitionDirection = 0;
+  updateProjectView();
+  resetProjectAutoAdvanceTimer();
+}
+
 function updateProjectView() {
   const projectStage = host.querySelector("[data-project-stage]");
   const projectProgress = host.querySelector("[data-project-progress]");
@@ -328,6 +346,18 @@ function updateProjectView() {
 
   if (projectStage && activeProject) {
     projectStage.innerHTML = renderProjectCard(activeProject, projectTransitionDirection);
+
+    const projectCard = projectStage.querySelector("[data-project-card]");
+    if (projectCard) {
+      projectCard.addEventListener("click", (event) => {
+        if (event.target.closest("a, button")) return;
+
+        const currentProject = getActiveProject();
+        if (!isImageOnlyProjectGallery(currentProject)) return;
+
+        advanceProjectImageStep(currentProject);
+      });
+    }
   }
 
   if (projectProgress) {
@@ -359,6 +389,42 @@ function moveProject(step) {
   resetProjectAutoAdvanceTimer();
 }
 
+function preloadProjectMediaSource(source, mediaType) {
+  if (!source || mediaType === "video" || preloadedMediaSources.has(source)) {
+    return Promise.resolve();
+  }
+
+  preloadedMediaSources.add(source);
+
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.decoding = "async";
+    image.src = source;
+
+    if (image.complete) {
+      resolve();
+      return;
+    }
+
+    image.onload = () => resolve();
+    image.onerror = () => resolve();
+  });
+}
+
+function preloadProjectReelMedia(reels) {
+  const preloadJobs = [];
+
+  reels.forEach((project) => {
+    if (!Array.isArray(project.mediaItems)) return;
+
+    project.mediaItems.forEach((item) => {
+      preloadJobs.push(preloadProjectMediaSource(item.media, item.mediaType));
+    });
+  });
+
+  return Promise.all(preloadJobs);
+}
+
 async function loadProjectsFromJson() {
   try {
     const response = await fetch("./src/projects.json", { cache: "no-store" });
@@ -382,6 +448,7 @@ async function loadProjectsFromJson() {
     }));
 
     activeProjectIndex = Math.min(activeProjectIndex, projectReels.length - 1);
+    void preloadProjectReelMedia(projectReels);
 
     if (activeSectionId === "projects") {
       renderActiveSection();
@@ -392,6 +459,8 @@ async function loadProjectsFromJson() {
       mediaItems: normalizeProjectMedia(project),
       activeMediaIndex: 0,
     }));
+
+    void preloadProjectReelMedia(projectReels);
   }
 }
 
@@ -486,18 +555,14 @@ function move(direction) {
 
 function onTouchStart(event) {
   const touch = event.changedTouches[0];
-  touchStart = {
-    x: touch.clientX,
-    y: touch.clientY,
-  };
+  touchStart = { x: touch.clientX, y: touch.clientY };
 }
 
-function onTouchEnd(event) {
+function handleSwipeEnd(endX, endY) {
   if (!touchStart) return;
 
-  const touch = event.changedTouches[0];
-  const deltaX = touch.clientX - touchStart.x;
-  const deltaY = touch.clientY - touchStart.y;
+  const deltaX = endX - touchStart.x;
+  const deltaY = endY - touchStart.y;
   const absX = Math.abs(deltaX);
   const absY = Math.abs(deltaY);
 
@@ -526,6 +591,21 @@ function onTouchEnd(event) {
   }
 
   move(direction);
+}
+
+function onTouchEnd(event) {
+  const touch = event.changedTouches[0];
+  handleSwipeEnd(touch.clientX, touch.clientY);
+}
+
+function onMouseDown(event) {
+  if (event.button !== 0) return;
+  touchStart = { x: event.clientX, y: event.clientY };
+}
+
+function onMouseUp(event) {
+  if (event.button !== 0) return;
+  handleSwipeEnd(event.clientX, event.clientY);
 }
 
 function onKeyDown(event) {
@@ -558,6 +638,8 @@ function onKeyDown(event) {
 function bindEvents() {
   window.addEventListener("touchstart", onTouchStart, { passive: true });
   window.addEventListener("touchend", onTouchEnd, { passive: true });
+  window.addEventListener("mousedown", onMouseDown);
+  window.addEventListener("mouseup", onMouseUp);
   window.addEventListener("keydown", onKeyDown);
 
   if (headerHomeButton) {

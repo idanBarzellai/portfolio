@@ -3,7 +3,7 @@
   {
     "name": "AZ AKA",
     "mediaType": "gif",
-    "media": "./assets/gifs/kida.gif",
+    "media": "./assets/gifs/azaka.gif",
     "description": "A fast-paced crisis management game where players react to incoming missile threats, balancing alerts, interceptions, and emergency handling under increasing pressure.",
     "link": "https://idanbarzellai.itch.io/az-aka"
   },
@@ -29,57 +29,57 @@
   },
   {
     "name": "Fiddler Crab",
-    "mediaType": "image",
-    "media": "",
+    "mediaType": "gif",
+    "media": "./assets/gifs/fiddlercrab.gif",
     "description": "An underwater arcade platformer where players smash shells, collect pearls, and grow stronger through repeated runs.",
     "link": "https://idanbarzellai.itch.io/fiddler-crab"
   },
   {
     "name": "This Is War",
-    "mediaType": "image",
-    "media": "",
+    "mediaType": "gif",
+    "media": "./assets/gifs/thisiswar.gif",
     "description": "A strategic card game built in Unity, focused on decision-making and war-themed mechanics.",
     "link": "https://idanbarzellai.itch.io/this-is-war"
   },
   {
     "name": "Karakasa",
-    "mediaType": "image",
-    "media": "",
+    "mediaType": "gif",
+    "media": "./assets/gifs/karakasa.gif",
     "description": "A pixel-art game inspired by Japanese yokai folklore, where players control a mischievous umbrella spirit navigating haunted environments.",
     "link": "https://idanbarzellai.itch.io/karakasa"
   },
   {
     "name": "Suzi's Punishment",
-    "mediaType": "image",
-    "media": "",
+    "mediaType": "gif",
+    "media": "./assets/gifs/suizs.gif",
     "description": "A quirky platformer where a young girl battles surreal enemies in a chaotic and darkly humorous world.",
     "link": "https://barzibroz.itch.io/suzis-punishment"
   },
   {
     "name": "Floaty Space",
-    "mediaType": "image",
-    "media": "",
+    "mediaType": "gif",
+    "media": "./assets/gifs/floatyspace.gif",
     "description": "A prototype puzzle experience built in Construct 3, exploring floating movement mechanics and spatial challenges.",
     "link": "https://idanbarzellai.itch.io/floaty-space"
   },
   {
     "name": "Bubble To The Moon",
-    "mediaType": "image",
-    "media": "",
+    "mediaType": "gif",
+    "media": "./assets/gifs/bubbletothemoon.gif",
     "description": "A lighthearted racing game where players navigate a bubble through space, focusing on movement and timing.",
     "link": "https://idanbarzellai.itch.io/bubble-to-the-moon"
   },
   {
     "name": "WEFA! - Water Earth Fire & Air",
-    "mediaType": "image",
-    "media": "",
+    "mediaType": "gif",
+    "media": "./assets/gifs/wefa.gif",
     "description": "A multiplayer arena combat game where players choose elemental powers and battle in fast-paced third-person action.",
     "link": "https://idanbarzellai.itch.io/wefa"
   },
   {
     "name": "Maze Away",
-    "mediaType": "image",
-    "media": "",
+    "mediaType": "gif",
+    "media": "./assets/gifs/mazeaway.gif",
     "description": "A puzzle game focused on navigation and pathfinding through increasingly complex maze structures.",
     "link": "https://idanbarzellai.itch.io/maze-away"
   },
@@ -130,43 +130,22 @@
   },
   {
     "name": "Jack And The Beanstalk - StoryTelling",
-    "mediaType": "image",
-    "media": "",
+    "mediaType": "gif",
+    "media": "./assets/gifs/jack.gif",
     "description": "An interactive storytelling project exploring narrative design through the classic Jack and the Beanstalk tale.",
     "link": "https://idanbarzellai.itch.io/jack-and-the-beanstalk-storytelling"
   },
   {
-    "name": "The Nutcracker - Storytelling",
-    "mediaType": "image",
-    "media": "",
-    "description": "A narrative-driven visual novel project based on The Nutcracker, focusing on story structure and presentation.",
-    "link": "https://maorastritzki.itch.io/the-nutcracker-storytelling"
-  },
-  {
     "name": "Go Box Go",
-    "mediaType": "image",
-    "media": "",
+    "mediaType": "gif",
+    "media": "./assets/gifs/goboxgo.gif",
     "description": "A Unity learning project based on a racing course tutorial, focusing on physics and movement systems.",
     "link": "https://idanbarzellai.itch.io/go-box-go"
   },
   {
-    "name": "Multiplayer FPS Course Project",
-    "mediaType": "image",
-    "media": "",
-    "description": "A first-person shooter project developed as part of a multiplayer course, focusing on networking and gameplay systems.",
-    "link": "https://idanbarzellai.itch.io/multiplayer-fsp-course-udemy"
-  },
-  {
-    "name": "Top Down Dungeon Crawler Course",
-    "mediaType": "image",
-    "media": "",
-    "description": "A top-down dungeon crawler project created as part of a tutorial, exploring combat systems and level design.",
-    "link": "https://idanbarzellai.itch.io/top-down-dungeon-crawler-course"
-  },
-  {
     "name": "The Wizard Of Wave Island",
-    "mediaType": "image",
-    "media": "",
+    "mediaType": "gif",
+    "media": "./assets/gifs/wizardofwaveisland.gif",
     "description": "An experimental game where players use focus and brainwave input mechanics to progress through challenges.",
     "link": "https://idanbarzellai.itch.io/the-wizard-of-wave-island"
   }
