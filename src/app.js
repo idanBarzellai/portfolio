@@ -234,7 +234,6 @@ function renderProjectsSection() {
   wrapper.className = "projects-section section-card";
 
   const activeProject = getActiveProject();
-  const projectCount = projectReels.length;
   const projectIndicators = projectReels
     .map(
       (_, index) => `<button type="button" class="project-dot${index === activeProjectIndex ? " is-active" : ""}" data-project-index="${index}" aria-label="Go to project ${index + 1}"></button>`
@@ -242,16 +241,11 @@ function renderProjectsSection() {
     .join("");
 
   wrapper.innerHTML = `
-    <div class="project-controls">
-      <button type="button" class="carousel-btn" data-project-dir="prev" aria-label="Previous project">↑</button>
-      <div class="project-counter" data-project-counter>${activeProjectIndex + 1} / ${projectCount}</div>
-      <button type="button" class="carousel-btn" data-project-dir="next" aria-label="Next project">↓</button>
+    <div class="project-stage" data-project-stage aria-label="Project reel">
+      ${activeProject ? renderProjectCard(activeProject, projectTransitionDirection) : ""}
     </div>
     <div class="project-progress" data-project-progress>
       ${projectIndicators}
-    </div>
-    <div class="project-stage" data-project-stage aria-label="Project reel">
-      ${activeProject ? renderProjectCard(activeProject, projectTransitionDirection) : ""}
     </div>
   `;
 
@@ -284,7 +278,6 @@ function stopProjectAutoAdvanceTimer() {
 
 function updateProjectView() {
   const projectStage = host.querySelector("[data-project-stage]");
-  const projectCounter = host.querySelector("[data-project-counter]");
   const projectProgress = host.querySelector("[data-project-progress]");
   const activeProject = getActiveProject();
 
@@ -314,10 +307,6 @@ function updateProjectView() {
         resetProjectAutoAdvanceTimer();
       });
     }
-  }
-
-  if (projectCounter) {
-    projectCounter.textContent = `${activeProjectIndex + 1} / ${projectReels.length}`;
   }
 
   if (projectProgress) {
@@ -387,27 +376,6 @@ async function loadProjectsFromJson() {
 
 function bindSectionActions() {
   if (activeSectionId !== "projects") return;
-
-  const controls = host.querySelectorAll("[data-project-dir]");
-
-  controls.forEach((button) => {
-    button.addEventListener("click", () => {
-      const direction = button.dataset.projectDir === "next" ? 1 : -1;
-      moveProject(direction);
-    });
-  });
-
-  const progressDots = host.querySelectorAll("[data-project-index]");
-  progressDots.forEach((dot) => {
-    dot.addEventListener("click", () => {
-      const index = Number(dot.dataset.projectIndex);
-      if (Number.isNaN(index)) return;
-
-      projectTransitionDirection = index >= activeProjectIndex ? 1 : -1;
-      activeProjectIndex = index;
-      updateProjectView();
-    });
-  });
 }
 
 function updateHeaderHomeButton() {
@@ -500,11 +468,6 @@ function onTouchEnd(event) {
 
   if (activeSectionId === "projects" && startedInProjects && !isHorizontal) {
     moveProject(deltaY < 0 ? 1 : -1);
-    return;
-  }
-
-  if (activeSectionId === "projects" && startedInProjects && isHorizontal) {
-    moveProject(deltaX > 0 ? -1 : 1);
     return;
   }
 
