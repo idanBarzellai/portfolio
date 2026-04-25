@@ -179,7 +179,10 @@ h1 {
   display: flex;
   justify-content: center;
   gap: 0.45rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  max-width: calc(100% - 1.25rem);
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .project-dot {
@@ -278,11 +281,11 @@ h1 {
 .project-media-pager {
   position: absolute;
   left: 50%;
-  bottom: 4.6rem;
+  bottom: 0.45rem;
   transform: translateX(-50%);
   display: flex;
   gap: 0.35rem;
-  z-index: 2;
+  z-index: 4;
 }
 
 .project-media-dot {

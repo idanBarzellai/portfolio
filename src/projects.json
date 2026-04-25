@@ -48,30 +48,6 @@
       {
         "mediaType": "image",
         "media": "./assets/images/seminar/5.png"
-      },
-      {
-        "mediaType": "image",
-        "media": "./assets/images/seminar/6.png"
-      },
-      {
-        "mediaType": "image",
-        "media": "./assets/images/seminar/7.png"
-      },
-      {
-        "mediaType": "image",
-        "media": "./assets/images/seminar/8.png"
-      },
-      {
-        "mediaType": "image",
-        "media": "./assets/images/seminar/9.png"
-      },
-      {
-        "mediaType": "image",
-        "media": "./assets/images/seminar/10.png"
-      },
-      {
-        "mediaType": "image",
-        "media": "./assets/images/seminar/11.png"
       }
     ],
     "description": "A research seminar on how mythological creatures has been implemented into gameplay mechanics."
