@@ -18,7 +18,7 @@
     "name": "KIDA",
     "mediaType": "gif",
     "media": "./assets/gifs/kida.gif",
-    "description": "An atmospheric platformaer game demo."
+    "description": "An atmospheric platformer game demo, collaborated with artists, ux designers, and game developers."
   },
   {
     "name": "From Myth To Games",
@@ -88,7 +88,7 @@
     "name": "This Is War",
     "mediaType": "gif",
     "media": "./assets/gifs/thisiswar.gif",
-    "description": "A strategic card game built in Unity, focused on decision-making and war-themed mechanics.",
+    "description": "A strategic \"War\" card game built in Unity, focused on decision-making.",
     "link": "https://idanbarzellai.itch.io/this-is-war"
   },
   {
@@ -191,12 +191,5 @@
     "media": "./assets/gifs/goboxgo.gif",
     "description": "A Unity learning project based on a racing course tutorial, focusing on physics and movement systems.",
     "link": "https://idanbarzellai.itch.io/go-box-go"
-  },
-  {
-    "name": "The Wizard Of Wave Island",
-    "mediaType": "gif",
-    "media": "./assets/gifs/wizardofwaveisland.gif",
-    "description": "An experimental game where players use focus and brainwave input mechanics to progress through challenges.",
-    "link": "https://idanbarzellai.itch.io/the-wizard-of-wave-island"
   }
 ]

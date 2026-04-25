@@ -1,4 +1,42 @@
-{
-  "heading": "Work Experience",
-  "body": "Share your professional timeline here: role, company, impact, and metrics. Keep it short and outcome-focused so it reads well on mobile."
-}
+[{
+    "title": "Level Designer",
+    "company": "Moon Active",
+    "years": "2026 – Present",
+    "description": [
+      "Design and implement engaging levels for a popular mobile game, focusing on player experience, pacing, and retention.",
+      "Collaborate with artists, developers, and product teams to ensure cohesive level design that aligns with overall game vision and quality standards.",
+      "Iterate on level designs based on player feedback and data analysis to optimize for fun and engagement."
+    ]
+  },
+  {
+    "title": "Game Dev Team Lead",
+    "company": "Spinomenal B2B iGaming Game Provider",
+    "years": "2023 – 2026",
+    "description": [
+      "Led a development team to improve code quality, delivery consistency, and overall gameplay polish.",
+      "Owned onboarding and established workflows to support faster iteration and cross-discipline collaboration.",
+      "Managed Git repositories, PRs, and code reviews to maintain stability during iterative development."
+    ]
+  },
+  {
+    "title": "Game Developer",
+    "company": "Spinomenal B2B iGaming Game Provider",
+    "years": "2022 – 2023",
+    "description": [
+      "Implemented and iterated on gameplay features in Phaser and Construct 2, focusing on moment-to-moment gameplay feel, clarity, and player retention.",
+      "Contributed to design reviews and provided feedback on content quality from a player experience perspective.",
+      "Developed and maintained client-side features using JavaScript and TypeScript.",
+      "Took ownership of features from design review through QA, collaborating with designers, QA, and product."
+    ]
+  },
+  {
+    "title": "Unity Instructor",
+    "company": "Appleseeds / Neta Project",
+    "years": "2021 – 2022",
+    "description": [
+      "Provided structured critique on student game ideas and prototypes.",
+      "Guided students through level design, gameplay iteration, scripting, and debugging in Unity.",
+      "Optimized Unity projects and C# code to improve performance, stability, and iteration speed."
+    ]
+  }
+]

@@ -124,14 +124,116 @@ function getNeighbor(sectionId, direction) {
   return column[nextIndex].id;
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function formatSectionLabel(key) {
+  return key
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 function renderTextSection(sectionId) {
   const content = SECTION_CONTENT[sectionId];
   const card = document.createElement("section");
   card.className = "text-section section-card";
 
+  if (sectionId === "about" && content && !Array.isArray(content) && typeof content === "object") {
+    const name = content.name ?? content.heading ?? "";
+    const title = content.title ?? "";
+    const summary = content.summary ?? content.body ?? "";
+    const phone = content.contact?.phone ?? "";
+    const email = content.contact?.email ?? "";
+
+    card.innerHTML = `
+      <h2>${escapeHtml(name)}</h2>
+      ${title ? `<p class="section-subtitle">${escapeHtml(title)}</p>` : ""}
+      ${summary ? `<p>${escapeHtml(summary)}</p>` : ""}
+      ${phone || email ? `<div class="section-contact">${phone ? `<p><strong>Phone:</strong> ${escapeHtml(phone)}</p>` : ""}${email ? `<p><strong>Email:</strong> ${escapeHtml(email)}</p>` : ""}</div>` : ""}
+    `;
+
+    return card;
+  }
+
+  if ((sectionId === "work" || sectionId === "academic") && Array.isArray(content)) {
+    const heading = SECTION_LAYOUT[sectionId]?.title ?? "Experience";
+    const entries = content
+      .map((item) => {
+        const title = item.title ?? item.degree ?? "";
+        const org = item.company ?? item.institution ?? "";
+        const years = item.years ?? "";
+        const bullets = Array.isArray(item.description) ? item.description : [];
+
+        return `
+          <article class="section-entry">
+            <h3>${escapeHtml(title)}</h3>
+            <p class="section-entry-meta">${escapeHtml(org)}${org && years ? " | " : ""}${escapeHtml(years)}</p>
+            ${bullets.length > 0 ? `<ul class="section-list">${bullets.map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>` : ""}
+          </article>
+        `;
+      })
+      .join("");
+
+    card.innerHTML = `
+      <h2>${escapeHtml(heading)}</h2>
+      <div class="section-stack">${entries}</div>
+    `;
+
+    return card;
+  }
+
+  if (sectionId === "skills" && content && !Array.isArray(content) && typeof content === "object") {
+    const groups = Object.entries(content)
+      .map(([groupKey, value]) => {
+        const groupTitle = formatSectionLabel(groupKey);
+        if (Array.isArray(value) && value.every((item) => typeof item === "string")) {
+          return `
+            <section class="section-entry">
+              <h3>${escapeHtml(groupTitle)}</h3>
+              <ul class="skill-chip-list">${value.map((skill) => `<li>${escapeHtml(skill)}</li>`).join("")}</ul>
+            </section>
+          `;
+        }
+
+        if (Array.isArray(value) && value.every((item) => item && typeof item === "object")) {
+          return `
+            <section class="section-entry">
+              <h3>${escapeHtml(groupTitle)}</h3>
+              <ul class="section-list">
+                ${value
+                  .map((item) => {
+                    const name = item.language ?? item.name ?? "";
+                    const level = item.level ?? "";
+                    return `<li>${escapeHtml(name)}${level ? ` - ${escapeHtml(level)}` : ""}</li>`;
+                  })
+                  .join("")}
+              </ul>
+            </section>
+          `;
+        }
+
+        return "";
+      })
+      .join("");
+
+    card.innerHTML = `
+      <h2>Skills</h2>
+      <div class="section-stack">${groups}</div>
+    `;
+
+    return card;
+  }
+
   card.innerHTML = `
-    <h2>${content.heading}</h2>
-    <p>${content.body}</p>
+    <h2>${escapeHtml(content?.heading ?? SECTION_LAYOUT[sectionId]?.title ?? "")}</h2>
+    <p>${escapeHtml(content?.body ?? "")}</p>
   `;
 
   return card;
@@ -474,12 +576,9 @@ async function loadSectionContentFromJson() {
         if (!response.ok) return;
 
         const content = await response.json();
-        if (!content || typeof content !== "object") return;
+        if (!content) return;
 
-        SECTION_CONTENT[sectionId] = {
-          heading: typeof content.heading === "string" && content.heading.trim() ? content.heading : SECTION_CONTENT[sectionId]?.heading ?? "",
-          body: typeof content.body === "string" && content.body.trim() ? content.body : SECTION_CONTENT[sectionId]?.body ?? "",
-        };
+        SECTION_CONTENT[sectionId] = content;
       } catch (error) {
         // Keep defaults when a section JSON file is missing or invalid.
       }
@@ -501,13 +600,31 @@ function updateHints() {
     hintBar.classList.toggle("is-hidden", activeSectionId !== "about");
   }
 
-  if (activeSectionId !== "about") {
-    return;
-  }
-
   for (const button of hintButtons) {
     const dir = button.dataset.dir;
-    const neighbor = getNeighbor(activeSectionId, dir);
+    const neighbor = getNeighbor("about", dir);
+    const labelEl = button.parentElement?.querySelector(".hint-label");
+    const directionLabel = dir ? dir.charAt(0).toUpperCase() + dir.slice(1) : "";
+
+    if (neighbor) {
+      const sectionTitle = SECTION_LAYOUT[neighbor]?.title ?? "";
+      button.setAttribute("aria-label", `Swipe ${dir} to ${sectionTitle}`);
+
+      if (labelEl) {
+        labelEl.textContent = sectionTitle;
+      }
+    } else {
+      button.setAttribute("aria-label", directionLabel ? `Swipe ${directionLabel}` : "Swipe");
+      if (labelEl) {
+        labelEl.textContent = "";
+      }
+    }
+
+    if (activeSectionId !== "about") {
+      button.disabled = true;
+      continue;
+    }
+
     button.disabled = !neighbor;
   }
 }

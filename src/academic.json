@@ -1,4 +1,22 @@
-{
-  "heading": "Academic Experience",
-  "body": "List your studies, key courses, thesis/project highlights, and any awards. Prioritize practical results and real-world relevance."
-}
+[
+  {
+    "degree": "M.Des. in Digital Game Design and Development",
+    "institution": "Shenkar College Institute",
+    "years": "2024 – 2026",
+    "description": [
+      "Led and collaborated on multidisciplinary teams to deliver narrative-, visual-, and gameplay-focused projects.",
+      "Focused on player motivation, mechanic tuning, and iteration.",
+      "Coursework included Game Design, Ludology, Game Production, Game Studies, Unity, and more.",
+      "Built and iterated on prototypes in Unity and Construct 3."
+    ]
+  },
+  {
+    "degree": "B.Sc. in Computer Science – Computer Games Program",
+    "institution": "Ben Gurion University",
+    "years": "2020 – 2023",
+    "description": [
+      "Designed and developed a fast-paced, cross-platform multiplayer game in Unity using Photon PUN 2.",
+      "Worked on level design, core mechanics, beta testing, and demo showcase."
+    ]
+  }
+]
