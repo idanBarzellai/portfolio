@@ -149,12 +149,6 @@ function formatHintLabel(sectionTitle) {
   return sectionTitle;
 }
 
-function truncateText(value, maxLength = 120) {
-  const text = String(value ?? "").trim();
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength - 1).trimEnd()}...`;
-}
-
 function buildPhoneHref(phone) {
   const normalized = String(phone ?? "").trim().replace(/(?!^\+)\D/g, "");
   return normalized ? `tel:${normalized}` : "";
@@ -197,11 +191,11 @@ function renderTextSection(sectionId) {
         const years = item.years ?? "";
         const logo = item.logo ?? "";
         const bullets = Array.isArray(item.description) ? item.description : [];
-        const condensedBullets = bullets.slice(0, 2).map((point) => truncateText(point, 130));
 
         return `
           <article class="section-entry">
             <div class="section-entry-header">
+              ${logo ? `<img class="section-entry-logo" src="${escapeHtml(logo)}" alt="${escapeHtml(org || title)} logo" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none'" />` : ""}
               <div class="section-entry-heading">
                 <div class="section-entry-title-row">
                   <h3>${escapeHtml(title)}</h3>
@@ -209,9 +203,8 @@ function renderTextSection(sectionId) {
                 </div>
                 ${org ? `<p class="section-entry-meta">${escapeHtml(org)}</p>` : ""}
               </div>
-              ${logo ? `<img class="section-entry-logo" src="${escapeHtml(logo)}" alt="${escapeHtml(org || title)} logo" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none'" />` : ""}
             </div>
-            ${condensedBullets.length > 0 ? `<ul class="section-list">${condensedBullets.map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>` : ""}
+            ${bullets.length > 0 ? `<ul class="section-list">${bullets.map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>` : ""}
           </article>
         `;
       })
