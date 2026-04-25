@@ -60,7 +60,7 @@ let projectReels = [...DEFAULT_PROJECT_REELS];
 let activeProjectIndex = 0;
 let projectTransitionDirection = 1;
 let projectAutoAdvanceTimer = null;
-const PROJECT_AUTO_ADVANCE_MS = 30000;
+const PROJECT_AUTO_ADVANCE_MS = 15000;
 const preloadedMediaSources = new Set();
 
 const host = document.getElementById("section-host");
@@ -140,6 +140,21 @@ function formatSectionLabel(key) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+function formatHintLabel(sectionTitle) {
+  const isCompactViewport = window.innerWidth <= 420 || window.innerHeight <= 740;
+  if (!isCompactViewport) return sectionTitle;
+
+  if (sectionTitle === "Work Experience") return "Work";
+  if (sectionTitle === "Academic Experience") return "Academic";
+  return sectionTitle;
+}
+
+function truncateText(value, maxLength = 120) {
+  const text = String(value ?? "").trim();
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1).trimEnd()}...`;
+}
+
 function renderTextSection(sectionId) {
   const content = SECTION_CONTENT[sectionId];
   const card = document.createElement("section");
@@ -163,26 +178,34 @@ function renderTextSection(sectionId) {
   }
 
   if ((sectionId === "work" || sectionId === "academic") && Array.isArray(content)) {
-    const heading = SECTION_LAYOUT[sectionId]?.title ?? "Experience";
     const entries = content
       .map((item) => {
         const title = item.title ?? item.degree ?? "";
         const org = item.company ?? item.institution ?? "";
         const years = item.years ?? "";
+        const logo = sectionId === "work" ? item.logo ?? "" : "";
         const bullets = Array.isArray(item.description) ? item.description : [];
+        const condensedBullets = bullets.slice(0, 2).map((point) => truncateText(point, 130));
 
         return `
           <article class="section-entry">
-            <h3>${escapeHtml(title)}</h3>
-            <p class="section-entry-meta">${escapeHtml(org)}${org && years ? " | " : ""}${escapeHtml(years)}</p>
-            ${bullets.length > 0 ? `<ul class="section-list">${bullets.map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>` : ""}
+            <div class="section-entry-header">
+              <div class="section-entry-heading">
+                <div class="section-entry-title-row">
+                  <h3>${escapeHtml(title)}</h3>
+                  ${years ? `<span class="section-entry-years">${escapeHtml(years)}</span>` : ""}
+                </div>
+                ${org ? `<p class="section-entry-meta">${escapeHtml(org)}</p>` : ""}
+              </div>
+              ${logo ? `<img class="section-entry-logo" src="${escapeHtml(logo)}" alt="${escapeHtml(org || title)} logo" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none'" />` : ""}
+            </div>
+            ${condensedBullets.length > 0 ? `<ul class="section-list">${condensedBullets.map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>` : ""}
           </article>
         `;
       })
       .join("");
 
     card.innerHTML = `
-      <h2>${escapeHtml(heading)}</h2>
       <div class="section-stack">${entries}</div>
     `;
 
@@ -224,7 +247,6 @@ function renderTextSection(sectionId) {
       .join("");
 
     card.innerHTML = `
-      <h2>Skills</h2>
       <div class="section-stack">${groups}</div>
     `;
 
@@ -232,7 +254,6 @@ function renderTextSection(sectionId) {
   }
 
   card.innerHTML = `
-    <h2>${escapeHtml(content?.heading ?? SECTION_LAYOUT[sectionId]?.title ?? "")}</h2>
     <p>${escapeHtml(content?.body ?? "")}</p>
   `;
 
@@ -611,7 +632,7 @@ function updateHints() {
       button.setAttribute("aria-label", `Swipe ${dir} to ${sectionTitle}`);
 
       if (labelEl) {
-        labelEl.textContent = sectionTitle;
+        labelEl.textContent = formatHintLabel(sectionTitle);
       }
     } else {
       button.setAttribute("aria-label", directionLabel ? `Swipe ${directionLabel}` : "Swipe");
@@ -701,6 +722,10 @@ function handleSwipeEnd(endX, endY) {
     return;
   }
 
+  if (activeSectionId === "work" && !isHorizontal) {
+    return;
+  }
+
   if (activeSectionId !== "about") {
     activeSectionId = "about";
     renderActiveSection();
@@ -758,6 +783,7 @@ function bindEvents() {
   window.addEventListener("mousedown", onMouseDown);
   window.addEventListener("mouseup", onMouseUp);
   window.addEventListener("keydown", onKeyDown);
+  window.addEventListener("resize", updateHints);
 
   if (headerHomeButton) {
     headerHomeButton.addEventListener("click", () => {
