@@ -21,9 +21,83 @@
     "description": "An atmospheric platformaer game demo."
   },
   {
+    "name": "From Myth To Games",
+    "mediaType": "image",
+    "media": "./assets/images/seminar/0.png",
+    "mediaItems": [
+      {
+        "mediaType": "image",
+        "media": "./assets/images/seminar/0.png"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/seminar/1.png"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/seminar/2.png"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/seminar/3.png"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/seminar/4.png"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/seminar/5.png"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/seminar/6.png"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/seminar/7.png"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/seminar/8.png"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/seminar/9.png"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/seminar/10.png"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/seminar/11.png"
+      }
+    ],
+    "description": "A research seminar on how mythological creatures has been implemented into gameplay mechanics."
+  },
+  {
     "name": "Spelunky - The Board Game",
     "mediaType": "image",
-    "media": "",
+    "media": "./assets/images/spelunky/0.png",
+    "mediaItems": [
+      {
+        "mediaType": "image",
+        "media": "./assets/images/spelunky/0.png"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/spelunky/1.jpg"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/spelunky/2.jpg"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/spelunky/3.jpg"
+      }
+    ],
     "description": "A board game adaptation of the classic Spelunky, translating digital exploration mechanics into a physical tabletop experience.",
     "link": "https://idanbarzellai.itch.io/spelunky-the-board-game"
   },
@@ -51,7 +125,7 @@
   {
     "name": "Suzi's Punishment",
     "mediaType": "gif",
-    "media": "./assets/gifs/suizs.gif",
+    "media": "./assets/gifs/suzis.gif",
     "description": "A quirky platformer where a young girl battles surreal enemies in a chaotic and darkly humorous world.",
     "link": "https://barzibroz.itch.io/suzis-punishment"
   },
