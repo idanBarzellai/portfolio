@@ -60,13 +60,7 @@ let projectReels = [...DEFAULT_PROJECT_REELS];
 let activeProjectIndex = 0;
 let projectTransitionDirection = 1;
 let projectAutoAdvanceTimer = null;
-let projectTimerStartedAt = 0;
-let projectTimerRemainingMs = 0;
-let projectHoldTimeout = null;
-let isProjectTimerPausedByHold = false;
-let suppressProjectCardClick = false;
 const PROJECT_AUTO_ADVANCE_MS = 30000;
-const PROJECT_HOLD_DELAY_MS = 220;
 
 const host = document.getElementById("section-host");
 const titleEl = document.getElementById("section-title");
@@ -213,10 +207,28 @@ function renderProjectMediaPager(project) {
   `;
 }
 
-function renderProjectTimer() {
+function isImageOnlyProjectGallery(project) {
+  return (
+    Boolean(project) &&
+    Array.isArray(project.mediaItems) &&
+    project.mediaItems.length > 1 &&
+    project.mediaItems.every((item) => item.mediaType === "image")
+  );
+}
+
+function getProjectStepDurationMs(project) {
+  if (!isImageOnlyProjectGallery(project)) {
+    return PROJECT_AUTO_ADVANCE_MS;
+  }
+
+  return Math.max(1000, Math.floor(PROJECT_AUTO_ADVANCE_MS / project.mediaItems.length));
+}
+
+function renderProjectTimer(project) {
+  const durationMs = getProjectStepDurationMs(project);
   return `
     <div class="project-timer" aria-hidden="true">
-      <span class="project-timer-fill" style="--project-timer-duration: ${PROJECT_AUTO_ADVANCE_MS}ms;"></span>
+      <span class="project-timer-fill" style="--project-timer-duration: ${durationMs}ms;"></span>
     </div>
   `;
 }
@@ -224,12 +236,11 @@ function renderProjectTimer() {
 function renderProjectCard(item, direction = 1) {
   const animationClass = direction >= 0 ? "project-card--enter-next" : "project-card--enter-prev";
   const activeMedia = getActiveProjectMedia(item) ?? { media: item.media, mediaType: item.mediaType };
-  const hasMultipleMedia = Array.isArray(item.mediaItems) && item.mediaItems.length > 1;
   const hasProjectLink = typeof item.link === "string" && item.link.trim() !== "" && item.link.trim() !== "#";
 
   return `
-    <article class="project-card ${animationClass}" data-project-card tabindex="0" role="button" aria-label="${hasMultipleMedia ? "Tap to change project media" : "Project preview"}">
-      ${renderProjectTimer()}
+    <article class="project-card ${animationClass}" data-project-card aria-label="Project preview">
+      ${renderProjectTimer(item)}
       ${buildProjectMedia(activeMedia)}
       <div class="reel-overlay">
         <div class="reel-copy">
@@ -275,70 +286,38 @@ function resetProjectAutoAdvanceTimer() {
 
   if (activeSectionId !== "projects" || projectReels.length < 2) {
     projectAutoAdvanceTimer = null;
-    projectTimerStartedAt = 0;
-    projectTimerRemainingMs = 0;
     return;
   }
 
-  projectTimerRemainingMs = PROJECT_AUTO_ADVANCE_MS;
-  projectTimerStartedAt = Date.now();
-  isProjectTimerPausedByHold = false;
+  const activeProject = getActiveProject();
+  const durationMs = getProjectStepDurationMs(activeProject);
 
   projectAutoAdvanceTimer = window.setTimeout(() => {
     if (activeSectionId !== "projects") return;
+
+    const currentProject = getActiveProject();
+    if (isImageOnlyProjectGallery(currentProject)) {
+      const nextIndex = ((currentProject.activeMediaIndex ?? 0) + 1) % currentProject.mediaItems.length;
+      currentProject.activeMediaIndex = nextIndex;
+
+      if (nextIndex === 0) {
+        moveProject(1);
+        return;
+      }
+
+      updateProjectView();
+      resetProjectAutoAdvanceTimer();
+      return;
+    }
+
     moveProject(1);
-    resetProjectAutoAdvanceTimer();
-  }, projectTimerRemainingMs);
+  }, durationMs);
 }
 
 function stopProjectAutoAdvanceTimer() {
   if (projectAutoAdvanceTimer) {
     window.clearTimeout(projectAutoAdvanceTimer);
     projectAutoAdvanceTimer = null;
-  }
-
-  projectTimerStartedAt = 0;
-  projectTimerRemainingMs = 0;
-  isProjectTimerPausedByHold = false;
-
-  if (projectHoldTimeout) {
-    window.clearTimeout(projectHoldTimeout);
-    projectHoldTimeout = null;
-  }
-}
-
-function pauseProjectAutoAdvanceTimer() {
-  if (!projectAutoAdvanceTimer || isProjectTimerPausedByHold) return;
-
-  window.clearTimeout(projectAutoAdvanceTimer);
-  projectAutoAdvanceTimer = null;
-
-  const elapsed = Math.max(0, Date.now() - projectTimerStartedAt);
-  projectTimerRemainingMs = Math.max(0, projectTimerRemainingMs - elapsed);
-  isProjectTimerPausedByHold = true;
-
-  const timerFill = host.querySelector(".project-timer-fill");
-  if (timerFill) {
-    timerFill.style.animationPlayState = "paused";
-  }
-}
-
-function resumeProjectAutoAdvanceTimer() {
-  if (!isProjectTimerPausedByHold || projectTimerRemainingMs <= 0 || activeSectionId !== "projects") {
-    return;
-  }
-
-  isProjectTimerPausedByHold = false;
-  projectTimerStartedAt = Date.now();
-  projectAutoAdvanceTimer = window.setTimeout(() => {
-    if (activeSectionId !== "projects") return;
-    moveProject(1);
-    resetProjectAutoAdvanceTimer();
-  }, projectTimerRemainingMs);
-
-  const timerFill = host.querySelector(".project-timer-fill");
-  if (timerFill) {
-    timerFill.style.animationPlayState = "running";
   }
 }
 
@@ -349,59 +328,6 @@ function updateProjectView() {
 
   if (projectStage && activeProject) {
     projectStage.innerHTML = renderProjectCard(activeProject, projectTransitionDirection);
-
-    const projectCard = projectStage.querySelector("[data-project-card]");
-    if (projectCard) {
-      const clearHoldTimeout = () => {
-        if (projectHoldTimeout) {
-          window.clearTimeout(projectHoldTimeout);
-          projectHoldTimeout = null;
-        }
-      };
-
-      const endHold = () => {
-        clearHoldTimeout();
-        if (!isProjectTimerPausedByHold) return;
-        resumeProjectAutoAdvanceTimer();
-        suppressProjectCardClick = true;
-      };
-
-      projectCard.addEventListener("pointerdown", (event) => {
-        if (event.target.closest("a, button")) return;
-
-        clearHoldTimeout();
-        projectHoldTimeout = window.setTimeout(() => {
-          pauseProjectAutoAdvanceTimer();
-          suppressProjectCardClick = true;
-        }, PROJECT_HOLD_DELAY_MS);
-      });
-
-      projectCard.addEventListener("pointerup", endHold);
-      projectCard.addEventListener("pointercancel", endHold);
-      projectCard.addEventListener("pointerleave", endHold);
-
-      projectCard.addEventListener("click", (event) => {
-        if (event.target.closest("a, button")) return;
-
-        clearHoldTimeout();
-        if (suppressProjectCardClick) {
-          suppressProjectCardClick = false;
-          return;
-        }
-
-        const bounds = projectCard.getBoundingClientRect();
-        const clickX = event.clientX - bounds.left;
-        const isLeftHalf = clickX < bounds.width / 2;
-        moveProject(isLeftHalf ? -1 : 1);
-      });
-
-      projectCard.addEventListener("keydown", (event) => {
-        if (event.key !== "Enter" && event.key !== " ") return;
-
-        event.preventDefault();
-        moveProject(1);
-      });
-    }
   }
 
   if (projectProgress) {
@@ -558,20 +484,11 @@ function move(direction) {
   renderActiveSection();
 }
 
-function shouldUseGlobalSwipe(direction, startedInProjects) {
-  if (activeSectionId !== "projects") return true;
-
-  if (!startedInProjects) return true;
-
-  return direction === "left" || direction === "right";
-}
-
 function onTouchStart(event) {
   const touch = event.changedTouches[0];
   touchStart = {
     x: touch.clientX,
     y: touch.clientY,
-    startedInProjects: Boolean(event.target.closest(".projects-section")),
   };
 }
 
@@ -583,11 +500,24 @@ function onTouchEnd(event) {
   const deltaY = touch.clientY - touchStart.y;
   const absX = Math.abs(deltaX);
   const absY = Math.abs(deltaY);
-  const startedInProjects = touchStart.startedInProjects;
 
   touchStart = null;
 
   if (Math.max(absX, absY) < SWIPE_MIN_DISTANCE) return;
+
+  const isHorizontal = absX > absY;
+  const direction = isHorizontal ? (deltaX > 0 ? "right" : "left") : (deltaY > 0 ? "down" : "up");
+
+  if (activeSectionId === "projects") {
+    if (!isHorizontal) {
+      moveProject(deltaY < 0 ? 1 : -1);
+      return;
+    }
+
+    activeSectionId = "about";
+    renderActiveSection();
+    return;
+  }
 
   if (activeSectionId !== "about") {
     activeSectionId = "about";
@@ -595,20 +525,6 @@ function onTouchEnd(event) {
     return;
   }
 
-  const isHorizontal = absX > absY;
-  const direction = isHorizontal ? (deltaX > 0 ? "right" : "left") : (deltaY > 0 ? "down" : "up");
-
-  if (activeSectionId === "projects" && startedInProjects && !isHorizontal) {
-    moveProject(deltaY < 0 ? 1 : -1);
-    return;
-  }
-
-  if (activeSectionId === "projects" && startedInProjects && isHorizontal) {
-    move(deltaX > 0 ? "left" : "right");
-    return;
-  }
-
-  if (!shouldUseGlobalSwipe(direction, startedInProjects)) return;
   move(direction);
 }
 
