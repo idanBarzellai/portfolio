@@ -6,7 +6,7 @@ const SECTION_LAYOUT = {
   skills: { x: 0, y: -1, title: "Skills" },
 };
 
-const SECTION_CONTENT = {
+let SECTION_CONTENT = {
   about: {
     heading: "Hi, I'm Your Name",
     body: "I build thoughtful digital experiences with a strong focus on product quality, speed, and clear communication. This portfolio uses a directional hub: swipe around to explore.",
@@ -23,6 +23,13 @@ const SECTION_CONTENT = {
     heading: "Skills",
     body: "Group your skills by area, for example: Frontend, Backend, AI tools, UX, and collaboration. Mention tools you use confidently in production.",
   },
+};
+
+const SECTION_JSON_FILES = {
+  about: "about.json",
+  skills: "skills.json",
+  academic: "academic.json",
+  work: "work-experience.json",
 };
 
 const DEFAULT_PROJECT_REELS = [
@@ -53,7 +60,13 @@ let projectReels = [...DEFAULT_PROJECT_REELS];
 let activeProjectIndex = 0;
 let projectTransitionDirection = 1;
 let projectAutoAdvanceTimer = null;
-const PROJECT_AUTO_ADVANCE_MS = 5500;
+let projectTimerStartedAt = 0;
+let projectTimerRemainingMs = 0;
+let projectHoldTimeout = null;
+let isProjectTimerPausedByHold = false;
+let suppressProjectCardClick = false;
+const PROJECT_AUTO_ADVANCE_MS = 30000;
+const PROJECT_HOLD_DELAY_MS = 220;
 
 const host = document.getElementById("section-host");
 const titleEl = document.getElementById("section-title");
@@ -203,7 +216,7 @@ function renderProjectMediaPager(project) {
 function renderProjectTimer() {
   return `
     <div class="project-timer" aria-hidden="true">
-      <span class="project-timer-fill"></span>
+      <span class="project-timer-fill" style="--project-timer-duration: ${PROJECT_AUTO_ADVANCE_MS}ms;"></span>
     </div>
   `;
 }
@@ -212,6 +225,8 @@ function renderProjectCard(item, direction = 1) {
   const animationClass = direction >= 0 ? "project-card--enter-next" : "project-card--enter-prev";
   const activeMedia = getActiveProjectMedia(item) ?? { media: item.media, mediaType: item.mediaType };
   const hasMultipleMedia = Array.isArray(item.mediaItems) && item.mediaItems.length > 1;
+  const hasProjectLink = typeof item.link === "string" && item.link.trim() !== "" && item.link.trim() !== "#";
+
   return `
     <article class="project-card ${animationClass}" data-project-card tabindex="0" role="button" aria-label="${hasMultipleMedia ? "Tap to change project media" : "Project preview"}">
       ${renderProjectTimer()}
@@ -222,7 +237,7 @@ function renderProjectCard(item, direction = 1) {
           <p>${item.description}</p>
         </div>
         <div class="reel-actions">
-          <a href="${item.link}" target="_blank" rel="noopener noreferrer">Open project</a>
+          ${hasProjectLink ? `<a href="${item.link}" target="_blank" rel="noopener noreferrer">Open project</a>` : ""}
         </div>
       </div>
       ${renderProjectMediaPager(item)}
@@ -260,20 +275,70 @@ function resetProjectAutoAdvanceTimer() {
 
   if (activeSectionId !== "projects" || projectReels.length < 2) {
     projectAutoAdvanceTimer = null;
+    projectTimerStartedAt = 0;
+    projectTimerRemainingMs = 0;
     return;
   }
+
+  projectTimerRemainingMs = PROJECT_AUTO_ADVANCE_MS;
+  projectTimerStartedAt = Date.now();
+  isProjectTimerPausedByHold = false;
 
   projectAutoAdvanceTimer = window.setTimeout(() => {
     if (activeSectionId !== "projects") return;
     moveProject(1);
     resetProjectAutoAdvanceTimer();
-  }, PROJECT_AUTO_ADVANCE_MS);
+  }, projectTimerRemainingMs);
 }
 
 function stopProjectAutoAdvanceTimer() {
   if (projectAutoAdvanceTimer) {
     window.clearTimeout(projectAutoAdvanceTimer);
     projectAutoAdvanceTimer = null;
+  }
+
+  projectTimerStartedAt = 0;
+  projectTimerRemainingMs = 0;
+  isProjectTimerPausedByHold = false;
+
+  if (projectHoldTimeout) {
+    window.clearTimeout(projectHoldTimeout);
+    projectHoldTimeout = null;
+  }
+}
+
+function pauseProjectAutoAdvanceTimer() {
+  if (!projectAutoAdvanceTimer || isProjectTimerPausedByHold) return;
+
+  window.clearTimeout(projectAutoAdvanceTimer);
+  projectAutoAdvanceTimer = null;
+
+  const elapsed = Math.max(0, Date.now() - projectTimerStartedAt);
+  projectTimerRemainingMs = Math.max(0, projectTimerRemainingMs - elapsed);
+  isProjectTimerPausedByHold = true;
+
+  const timerFill = host.querySelector(".project-timer-fill");
+  if (timerFill) {
+    timerFill.style.animationPlayState = "paused";
+  }
+}
+
+function resumeProjectAutoAdvanceTimer() {
+  if (!isProjectTimerPausedByHold || projectTimerRemainingMs <= 0 || activeSectionId !== "projects") {
+    return;
+  }
+
+  isProjectTimerPausedByHold = false;
+  projectTimerStartedAt = Date.now();
+  projectAutoAdvanceTimer = window.setTimeout(() => {
+    if (activeSectionId !== "projects") return;
+    moveProject(1);
+    resetProjectAutoAdvanceTimer();
+  }, projectTimerRemainingMs);
+
+  const timerFill = host.querySelector(".project-timer-fill");
+  if (timerFill) {
+    timerFill.style.animationPlayState = "running";
   }
 }
 
@@ -287,25 +352,54 @@ function updateProjectView() {
 
     const projectCard = projectStage.querySelector("[data-project-card]");
     if (projectCard) {
+      const clearHoldTimeout = () => {
+        if (projectHoldTimeout) {
+          window.clearTimeout(projectHoldTimeout);
+          projectHoldTimeout = null;
+        }
+      };
+
+      const endHold = () => {
+        clearHoldTimeout();
+        if (!isProjectTimerPausedByHold) return;
+        resumeProjectAutoAdvanceTimer();
+        suppressProjectCardClick = true;
+      };
+
+      projectCard.addEventListener("pointerdown", (event) => {
+        if (event.target.closest("a, button")) return;
+
+        clearHoldTimeout();
+        projectHoldTimeout = window.setTimeout(() => {
+          pauseProjectAutoAdvanceTimer();
+          suppressProjectCardClick = true;
+        }, PROJECT_HOLD_DELAY_MS);
+      });
+
+      projectCard.addEventListener("pointerup", endHold);
+      projectCard.addEventListener("pointercancel", endHold);
+      projectCard.addEventListener("pointerleave", endHold);
+
       projectCard.addEventListener("click", (event) => {
         if (event.target.closest("a, button")) return;
 
-        if (!activeProject.mediaItems || activeProject.mediaItems.length < 2) return;
+        clearHoldTimeout();
+        if (suppressProjectCardClick) {
+          suppressProjectCardClick = false;
+          return;
+        }
 
-        activeProject.activeMediaIndex = ((activeProject.activeMediaIndex ?? 0) + 1) % activeProject.mediaItems.length;
-        updateProjectView();
-        resetProjectAutoAdvanceTimer();
+        const bounds = projectCard.getBoundingClientRect();
+        const clickX = event.clientX - bounds.left;
+        const isLeftHalf = clickX < bounds.width / 2;
+        moveProject(isLeftHalf ? -1 : 1);
       });
 
       projectCard.addEventListener("keydown", (event) => {
         if (event.key !== "Enter" && event.key !== " ") return;
 
-        if (!activeProject.mediaItems || activeProject.mediaItems.length < 2) return;
-
         event.preventDefault();
-        activeProject.activeMediaIndex = ((activeProject.activeMediaIndex ?? 0) + 1) % activeProject.mediaItems.length;
-        updateProjectView();
-        resetProjectAutoAdvanceTimer();
+        moveProject(1);
       });
     }
   }
@@ -373,6 +467,29 @@ async function loadProjectsFromJson() {
       activeMediaIndex: 0,
     }));
   }
+}
+
+async function loadSectionContentFromJson() {
+  const entries = Object.entries(SECTION_JSON_FILES);
+
+  await Promise.all(
+    entries.map(async ([sectionId, fileName]) => {
+      try {
+        const response = await fetch(`./src/${fileName}`, { cache: "no-store" });
+        if (!response.ok) return;
+
+        const content = await response.json();
+        if (!content || typeof content !== "object") return;
+
+        SECTION_CONTENT[sectionId] = {
+          heading: typeof content.heading === "string" && content.heading.trim() ? content.heading : SECTION_CONTENT[sectionId]?.heading ?? "",
+          body: typeof content.body === "string" && content.body.trim() ? content.body : SECTION_CONTENT[sectionId]?.body ?? "",
+        };
+      } catch (error) {
+        // Keep defaults when a section JSON file is missing or invalid.
+      }
+    })
+  );
 }
 
 function bindSectionActions() {
@@ -540,5 +657,6 @@ function bindEvents() {
 }
 
 bindEvents();
-loadProjectsFromJson();
-renderActiveSection();
+Promise.all([loadProjectsFromJson(), loadSectionContentFromJson()]).finally(() => {
+  renderActiveSection();
+});

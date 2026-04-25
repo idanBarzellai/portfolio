@@ -269,7 +269,10 @@ h1 {
   transform-origin: left center;
   transform: scaleX(0);
   background: rgba(255, 255, 255, 0.95);
-  animation: project-timer-fill 5500ms linear forwards;
+  animation-name: project-timer-fill;
+  animation-duration: var(--project-timer-duration, 30000ms);
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
 }
 
 .project-media-pager {
