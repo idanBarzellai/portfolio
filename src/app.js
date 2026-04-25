@@ -155,6 +155,16 @@ function truncateText(value, maxLength = 120) {
   return `${text.slice(0, maxLength - 1).trimEnd()}...`;
 }
 
+function buildPhoneHref(phone) {
+  const normalized = String(phone ?? "").trim().replace(/(?!^\+)\D/g, "");
+  return normalized ? `tel:${normalized}` : "";
+}
+
+function buildEmailHref(email) {
+  const normalized = String(email ?? "").trim();
+  return normalized ? `mailto:${normalized}` : "";
+}
+
 function renderTextSection(sectionId) {
   const content = SECTION_CONTENT[sectionId];
   const card = document.createElement("section");
@@ -166,12 +176,14 @@ function renderTextSection(sectionId) {
     const summary = content.summary ?? content.body ?? "";
     const phone = content.contact?.phone ?? "";
     const email = content.contact?.email ?? "";
+    const phoneHref = buildPhoneHref(phone);
+    const emailHref = buildEmailHref(email);
 
     card.innerHTML = `
       <h2>${escapeHtml(name)}</h2>
       ${title ? `<p class="section-subtitle">${escapeHtml(title)}</p>` : ""}
       ${summary ? `<p>${escapeHtml(summary)}</p>` : ""}
-      ${phone || email ? `<div class="section-contact">${phone ? `<p><strong>Phone:</strong> ${escapeHtml(phone)}</p>` : ""}${email ? `<p><strong>Email:</strong> ${escapeHtml(email)}</p>` : ""}</div>` : ""}
+      ${phone || email ? `<div class="section-contact">${phone ? `<p><strong>Phone:</strong> ${phoneHref ? `<a href="${escapeHtml(phoneHref)}">${escapeHtml(phone)}</a>` : escapeHtml(phone)}</p>` : ""}${email ? `<p><strong>Email:</strong> ${emailHref ? `<a href="${escapeHtml(emailHref)}">${escapeHtml(email)}</a>` : escapeHtml(email)}</p>` : ""}</div>` : ""}
     `;
 
     return card;
@@ -183,7 +195,7 @@ function renderTextSection(sectionId) {
         const title = item.title ?? item.degree ?? "";
         const org = item.company ?? item.institution ?? "";
         const years = item.years ?? "";
-        const logo = sectionId === "work" ? item.logo ?? "" : "";
+        const logo = item.logo ?? "";
         const bullets = Array.isArray(item.description) ? item.description : [];
         const condensedBullets = bullets.slice(0, 2).map((point) => truncateText(point, 130));
 
@@ -226,10 +238,11 @@ function renderTextSection(sectionId) {
         }
 
         if (Array.isArray(value) && value.every((item) => item && typeof item === "object")) {
+          const listClass = groupKey.toLowerCase() === "languages" ? "section-list section-list--plain" : "section-list";
           return `
             <section class="section-entry">
               <h3>${escapeHtml(groupTitle)}</h3>
-              <ul class="section-list">
+              <ul class="${listClass}">
                 ${value
                   .map((item) => {
                     const name = item.language ?? item.name ?? "";

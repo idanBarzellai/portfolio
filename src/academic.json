@@ -2,6 +2,7 @@
   {
     "degree": "M.Des. in Digital Game Design and Development",
     "institution": "Shenkar College Institute",
+    "logo": "./assets/logos/shenkar-logo.png",
     "years": "2024 – 2026",
     "description": [
       "Led and collaborated on multidisciplinary teams to deliver narrative-, visual-, and gameplay-focused projects.",
@@ -13,6 +14,7 @@
   {
     "degree": "B.Sc. in Computer Science – Computer Games Program",
     "institution": "Ben Gurion University",
+    "logo": "./assets/logos/bengurion-logo.png",
     "years": "2020 – 2023",
     "description": [
       "Designed and developed a fast-paced, cross-platform multiplayer game in Unity using Photon PUN 2.",
