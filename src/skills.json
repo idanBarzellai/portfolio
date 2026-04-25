@@ -1,4 +1,45 @@
 {
-  "heading": "Skills",
-  "body": "Group your skills by area, for example: Frontend, Backend, AI tools, UX, and collaboration. Mention tools you use confidently in production."
+  "gameDesign": [
+    "Game Design",
+    "Level Design",
+    "Level Flow",
+    "Game Creative",
+    "Gameplay Development",
+    "Gameplay Iteration",
+    "Player Experience",
+    "Team Leadership",
+    "Team Collaboration"
+  ],
+  "enginesAndTools": [
+    "Unity",
+    "Phaser",
+    "Construct 2",
+    "Construct 3",
+    "Monday.com",
+    "Jira",
+    "GitHub",
+    "Bitbucket",
+    "S3",
+    "Photoshop",
+    "Figma",
+    "Miro"
+  ],
+  "programming": [
+    "JavaScript",
+    "TypeScript",
+    "Java",
+    "C#",
+    "Python",
+    "AI Tools (Cursor, GitHub Copilot, etc.)"
+  ],
+  "languages": [
+    {
+      "language": "Hebrew",
+      "level": "Native"
+    },
+    {
+      "language": "English",
+      "level": "Fluent"
+    }
+  ]
 }
