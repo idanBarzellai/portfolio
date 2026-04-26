@@ -200,18 +200,30 @@ h1 {
   flex: 0 0 auto;
   justify-self: end;
   align-self: end;
+  appearance: none;
+  -webkit-appearance: none;
   border: 0;
   background: transparent;
   padding: 0;
   cursor: pointer;
   z-index: 2;
   transform-origin: right bottom;
+  outline: none;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .about-section-image-button:focus-visible {
-  outline: 2px solid #81ae9d;
-  outline-offset: 0.35rem;
-  border-radius: 0.8rem;
+  outline: none;
+  box-shadow: none;
+}
+
+.about-section-image-button:hover,
+.about-section-image-button:focus,
+.about-section-image-button:active {
+  outline: none;
+  box-shadow: none;
+  background: transparent;
 }
 
 .about-section-hi-bubble {
