@@ -78,6 +78,13 @@ const directionVectors = {
   right: { x: 1, y: 0 },
 };
 
+const KEY_DIRECTION_MAP = {
+  ArrowUp: "up",
+  ArrowDown: "down",
+  ArrowLeft: "left",
+  ArrowRight: "right",
+};
+
 let activeSectionId = "about";
 let touchStart = null;
 let audioContext = null;
@@ -160,6 +167,15 @@ function buildEmailHref(email) {
   return normalized ? `mailto:${normalized}` : "";
 }
 
+function isObjectContent(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function goToAboutSection() {
+  activeSectionId = "about";
+  renderActiveSection();
+}
+
 function playAboutBopSound() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   if (!AudioContextClass) return;
@@ -207,7 +223,7 @@ function renderTextSection(sectionId) {
   const card = document.createElement("section");
   card.className = "text-section section-card";
 
-  if (sectionId === "about" && content && !Array.isArray(content) && typeof content === "object") {
+  if (sectionId === "about" && isObjectContent(content)) {
     const name = content.name ?? content.heading ?? "";
     const title = content.title ?? "";
     const summary = content.summary ?? content.body ?? "";
@@ -270,7 +286,7 @@ function renderTextSection(sectionId) {
     return card;
   }
 
-  if (sectionId === "skills" && content && !Array.isArray(content) && typeof content === "object") {
+  if (sectionId === "skills" && isObjectContent(content)) {
     const groups = Object.entries(content)
       .map(([groupKey, value]) => {
         const groupTitle = formatSectionLabel(groupKey);
@@ -320,14 +336,16 @@ function renderTextSection(sectionId) {
 }
 
 function buildProjectMedia(item) {
+  const media = escapeHtml(item.media ?? "");
+
   if (item.mediaType === "video") {
     return `
-      <video class="reel-media reel-media--video" src="${item.media}" autoplay loop muted playsinline preload="metadata"></video>
+      <video class="reel-media reel-media--video" src="${media}" autoplay loop muted playsinline preload="metadata"></video>
     `;
   }
 
   return `
-    <img class="reel-media" src="${item.media}" alt="${item.name} preview" loading="eager" decoding="async" />
+    <img class="reel-media" src="${media}" alt="${escapeHtml(item.name ?? "Project")} preview" loading="eager" decoding="async" />
   `;
 }
 
@@ -419,19 +437,22 @@ function renderProjectTimer(project) {
 function renderProjectCard(item, direction = 1) {
   const animationClass = direction > 0 ? "project-card--enter-next" : direction < 0 ? "project-card--enter-prev" : "";
   const activeMedia = getActiveProjectMedia(item) ?? { media: item.media, mediaType: item.mediaType };
-  const hasProjectLink = typeof item.link === "string" && item.link.trim() !== "" && item.link.trim() !== "#";
+  const projectName = escapeHtml(item.name ?? "Untitled project");
+  const projectDescription = escapeHtml(item.description ?? "");
+  const projectLink = String(item.link ?? "").trim();
+  const hasProjectLink = projectLink !== "" && projectLink !== "#";
 
   return `
     <article class="project-card${animationClass ? ` ${animationClass}` : ""}" data-project-card aria-label="Project preview">
       ${renderProjectTimer(item)}
-      ${buildProjectMedia(activeMedia)}
+      ${buildProjectMedia({ ...activeMedia, name: item.name })}
       <div class="reel-overlay">
         <div class="reel-copy">
-          <h3>${item.name}</h3>
-          <p>${item.description}</p>
+          <h3>${projectName}</h3>
+          <p>${projectDescription}</p>
         </div>
         <div class="reel-actions">
-          ${hasProjectLink ? `<a href="${item.link}" target="_blank" rel="noopener noreferrer">Open project</a>` : ""}
+          ${hasProjectLink ? `<a href="${escapeHtml(projectLink)}" target="_blank" rel="noopener noreferrer">Open project</a>` : ""}
         </div>
       </div>
       ${renderProjectMediaPager(item)}
@@ -643,7 +664,7 @@ async function loadProjectsFromJson() {
     if (activeSectionId === "projects") {
       renderActiveSection();
     }
-  } catch (error) {
+  } catch {
     projectReels = DEFAULT_PROJECT_REELS.map((project) => ({
       ...project,
       mediaItems: normalizeProjectMedia(project),
@@ -667,7 +688,7 @@ async function loadSectionContentFromJson() {
         if (!content) return;
 
         SECTION_CONTENT[sectionId] = content;
-      } catch (error) {
+      } catch {
         // Keep defaults when a section JSON file is missing or invalid.
       }
     })
@@ -814,8 +835,7 @@ function handleSwipeEnd(endX, endY) {
       return;
     }
 
-    activeSectionId = "about";
-    renderActiveSection();
+    goToAboutSection();
     return;
   }
 
@@ -824,8 +844,7 @@ function handleSwipeEnd(endX, endY) {
   }
 
   if (activeSectionId !== "about") {
-    activeSectionId = "about";
-    renderActiveSection();
+    goToAboutSection();
     return;
   }
 
@@ -848,26 +867,13 @@ function onMouseUp(event) {
 }
 
 function onKeyDown(event) {
-  const mapping = {
-    ArrowUp: "up",
-    ArrowDown: "down",
-    ArrowLeft: "left",
-    ArrowRight: "right",
-  };
-
-  const direction = mapping[event.key];
+  const direction = KEY_DIRECTION_MAP[event.key];
   if (!direction) return;
 
   event.preventDefault();
 
   if (activeSectionId !== "about") {
-    activeSectionId = "about";
-    renderActiveSection();
-    return;
-  }
-
-  if (activeSectionId === "projects" && (direction === "up" || direction === "down")) {
-    moveProject(direction === "up" ? -1 : 1);
+    goToAboutSection();
     return;
   }
 
@@ -884,8 +890,7 @@ function bindEvents() {
 
   if (headerHomeButton) {
     headerHomeButton.addEventListener("click", () => {
-      activeSectionId = "about";
-      renderActiveSection();
+      goToAboutSection();
     });
   }
 
