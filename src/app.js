@@ -80,6 +80,7 @@ const directionVectors = {
 
 let activeSectionId = "about";
 let touchStart = null;
+let audioContext = null;
 
 const coordinateMap = new Map(
   Object.entries(SECTION_LAYOUT).map(([sectionId, config]) => [`${config.x}:${config.y}`, sectionId])
@@ -159,6 +160,48 @@ function buildEmailHref(email) {
   return normalized ? `mailto:${normalized}` : "";
 }
 
+function playAboutBopSound() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+
+  if (!audioContext) {
+    audioContext = new AudioContextClass();
+  }
+
+  if (audioContext.state === "suspended") {
+    void audioContext.resume();
+  }
+
+  const now = audioContext.currentTime;
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  const filterNode = audioContext.createBiquadFilter();
+
+  oscillator.type = "triangle";
+  oscillator.frequency.setValueAtTime(620, now);
+  oscillator.frequency.exponentialRampToValueAtTime(320, now + 0.09);
+
+  filterNode.type = "lowpass";
+  filterNode.frequency.setValueAtTime(1800, now);
+  filterNode.frequency.exponentialRampToValueAtTime(800, now + 0.09);
+
+  gainNode.gain.setValueAtTime(0.0001, now);
+  gainNode.gain.exponentialRampToValueAtTime(0.22, now + 0.012);
+  gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+
+  oscillator.connect(filterNode);
+  filterNode.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+
+  oscillator.start(now);
+  oscillator.stop(now + 0.16);
+  oscillator.onended = () => {
+    oscillator.disconnect();
+    filterNode.disconnect();
+    gainNode.disconnect();
+  };
+}
+
 function renderTextSection(sectionId) {
   const content = SECTION_CONTENT[sectionId];
   const card = document.createElement("section");
@@ -174,10 +217,20 @@ function renderTextSection(sectionId) {
     const emailHref = buildEmailHref(email);
 
     card.innerHTML = `
-      <h2>${escapeHtml(name)}</h2>
-      ${title ? `<p class="section-subtitle">${escapeHtml(title)}</p>` : ""}
-      ${summary ? `<p>${escapeHtml(summary)}</p>` : ""}
-      ${phone || email ? `<div class="section-contact">${phone ? `<p><strong>Phone:</strong> ${phoneHref ? `<a href="${escapeHtml(phoneHref)}">${escapeHtml(phone)}</a>` : escapeHtml(phone)}</p>` : ""}${email ? `<p><strong>Email:</strong> ${emailHref ? `<a href="${escapeHtml(emailHref)}">${escapeHtml(email)}</a>` : escapeHtml(email)}</p>` : ""}</div>` : ""}
+      <div class="about-section-layout">
+        <div class="about-section-content">
+          <h2>${escapeHtml(name)}</h2>
+          ${title ? `<p class="section-subtitle">${escapeHtml(title)}</p>` : ""}
+          ${summary ? `<p>${escapeHtml(summary)}</p>` : ""}
+        </div>
+        <div class="about-section-footer">
+          ${phone || email ? `<div class="about-section-contact section-contact">${phone ? `<p><strong>Phone:</strong> ${phoneHref ? `<a href="${escapeHtml(phoneHref)}">${escapeHtml(phone)}</a>` : escapeHtml(phone)}</p>` : ""}${email ? `<p><strong>Email:</strong> ${emailHref ? `<a href="${escapeHtml(emailHref)}">${escapeHtml(email)}</a>` : escapeHtml(email)}</p>` : ""}</div>` : ""}
+          <button type="button" class="about-section-image-button" data-about-image-button aria-label="Say hi">
+            <span class="about-section-hi-bubble" aria-hidden="true">hi!</span>
+            <img class="about-section-image" src="./assets/idan.png" alt="Idan" loading="lazy" decoding="async" />
+          </button>
+        </div>
+      </div>
     `;
 
     return card;
@@ -398,8 +451,16 @@ function renderProjectsSection() {
     .join("");
 
   wrapper.innerHTML = `
-    <div class="project-stage" data-project-stage aria-label="Project reel">
-      ${activeProject ? renderProjectCard(activeProject, projectTransitionDirection) : ""}
+    <div class="project-stage-shell">
+      <button type="button" class="project-nav-btn project-nav-btn--prev" data-project-step="-1" aria-label="Previous project">
+        <span aria-hidden="true">‹</span>
+      </button>
+      <div class="project-stage" data-project-stage aria-label="Project reel">
+        ${activeProject ? renderProjectCard(activeProject, projectTransitionDirection) : ""}
+      </div>
+      <button type="button" class="project-nav-btn project-nav-btn--next" data-project-step="1" aria-label="Next project">
+        <span aria-hidden="true">›</span>
+      </button>
     </div>
     <div class="project-progress" data-project-progress>
       ${projectIndicators}
@@ -614,7 +675,37 @@ async function loadSectionContentFromJson() {
 }
 
 function bindSectionActions() {
+  if (activeSectionId === "about") {
+    const aboutImageButton = host.querySelector("[data-about-image-button]");
+    if (aboutImageButton) {
+      let resetTimer = null;
+
+      aboutImageButton.addEventListener("click", () => {
+        playAboutBopSound();
+        aboutImageButton.classList.remove("is-saying-hi");
+        void aboutImageButton.offsetWidth;
+        aboutImageButton.classList.add("is-saying-hi");
+
+        if (resetTimer) {
+          window.clearTimeout(resetTimer);
+        }
+
+        resetTimer = window.setTimeout(() => {
+          aboutImageButton.classList.remove("is-saying-hi");
+        }, 1600);
+      });
+    }
+  }
+
   if (activeSectionId !== "projects") return;
+
+  host.querySelectorAll("[data-project-step]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const step = Number(button.dataset.projectStep);
+      if (Number.isNaN(step)) return;
+      moveProject(step);
+    });
+  });
 }
 
 function updateHeaderHomeButton() {
