@@ -38,21 +38,21 @@ const DEFAULT_PROJECT_REELS = [
     media: "https://images.unsplash.com/photo-1483058712412-4245e9b90334?auto=format&fit=crop&w=900&q=80",
     mediaType: "image",
     description: "A short one-line summary of what the project does and why it matters.",
-    link: "https://example.com/project-one",
+    itchiolink: "https://example.com/project-one",
   },
   {
     name: "Project Two",
     media: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80",
     mediaType: "image",
     description: "Describe your stack and one concrete user or business outcome.",
-    link: "https://example.com/project-two",
+    itchiolink: "https://example.com/project-two",
   },
   {
     name: "Project Three",
     media: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=900&q=80",
     mediaType: "image",
     description: "Add a demo video link or keep this as an image-based preview.",
-    link: "https://example.com/project-three",
+    itchiolink: "https://example.com/project-three",
   },
 ];
 
@@ -242,7 +242,7 @@ function renderTextSection(sectionId) {
         <div class="about-section-footer">
           ${phone || email ? `<div class="about-section-contact section-contact">${phone ? `<p><strong>Phone:</strong> ${phoneHref ? `<a href="${escapeHtml(phoneHref)}">${escapeHtml(phone)}</a>` : escapeHtml(phone)}</p>` : ""}${email ? `<p><strong>Email:</strong> ${emailHref ? `<a href="${escapeHtml(emailHref)}">${escapeHtml(email)}</a>` : escapeHtml(email)}</p>` : ""}</div>` : ""}
           <button type="button" class="about-section-image-button" data-about-image-button aria-label="Say hi">
-            <span class="about-section-hi-bubble" aria-hidden="true">hi!</span>
+            <span class="about-section-hi-bubble" aria-hidden="true">Swipe right to see all my projects!</span>
             <img class="about-section-image" src="./assets/idan.png" alt="Idan" loading="lazy" decoding="async" />
           </button>
         </div>
@@ -439,8 +439,10 @@ function renderProjectCard(item, direction = 1) {
   const activeMedia = getActiveProjectMedia(item) ?? { media: item.media, mediaType: item.mediaType };
   const projectName = escapeHtml(item.name ?? "Untitled project");
   const projectDescription = escapeHtml(item.description ?? "");
-  const projectLink = String(item.link ?? "").trim();
-  const hasProjectLink = projectLink !== "" && projectLink !== "#";
+  const itchIoLink = String(item.itchiolink ?? "").trim();
+  const googlePlayLink = String(item.googleplaylink ?? "").trim();
+  const hasItchIoLink = itchIoLink !== "" && itchIoLink !== "#";
+  const hasGooglePlayLink = googlePlayLink !== "" && googlePlayLink !== "#";
 
   return `
     <article class="project-card${animationClass ? ` ${animationClass}` : ""}" data-project-card aria-label="Project preview">
@@ -452,7 +454,8 @@ function renderProjectCard(item, direction = 1) {
           <p>${projectDescription}</p>
         </div>
         <div class="reel-actions">
-          ${hasProjectLink ? `<a href="${escapeHtml(projectLink)}" target="_blank" rel="noopener noreferrer">Open project</a>` : ""}
+          ${hasItchIoLink ? `<a class="store-link" href="${escapeHtml(itchIoLink)}" target="_blank" rel="noopener noreferrer" aria-label="Open ${projectName} on Itch.io"><img src="./assets/logos/itchio-logo.png" alt="Itch.io" loading="lazy" decoding="async" /></a>` : ""}
+          ${hasGooglePlayLink ? `<a class="store-link" href="${escapeHtml(googlePlayLink)}" target="_blank" rel="noopener noreferrer" aria-label="Open ${projectName} on Google Play"><img src="./assets/logos/googleplay-logo.png" alt="Google Play" loading="lazy" decoding="async" /></a>` : ""}
         </div>
       </div>
       ${renderProjectMediaPager(item)}
@@ -653,7 +656,8 @@ async function loadProjectsFromJson() {
       media: project.media,
       mediaType: project.mediaType === "video" ? "video" : project.mediaType === "gif" ? "gif" : "image",
       description: project.description ?? "",
-      link: project.link ?? "#",
+      itchiolink: project.itchiolink ?? project.link ?? "#",
+      googleplaylink: project.googleplaylink ?? "#",
       mediaItems: normalizeProjectMedia(project),
       activeMediaIndex: 0,
     }));

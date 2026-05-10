@@ -1,24 +1,79 @@
 [
-  
-  {
-    "name": "AZ AKA",
-    "mediaType": "gif",
-    "media": "./assets/gifs/azaka.gif",
-    "description": "A fast-paced crisis management game where players react to incoming missile threats, balancing alerts, interceptions, and emergency handling under increasing pressure.",
-    "link": "https://idanbarzellai.itch.io/az-aka"
-  },
   {
     "name": "KERAH",
     "mediaType": "gif",
     "media": "./assets/gifs/kerah.gif",
     "description": "A cooperative puzzle game where two players control siblings navigating an icy desert while avoiding threats and finding their way home.",
-    "link": "https://idanbarzellai.itch.io/kerah"
+    "itchiolink": "https://idanbarzellai.itch.io/kerah"
   },
- {
+  {
     "name": "KIDA",
     "mediaType": "gif",
     "media": "./assets/gifs/kida.gif",
     "description": "An atmospheric platformer game demo, collaborated with artists, ux designers, and game developers."
+  },
+  {
+    "name": "Karakasa",
+    "mediaType": "gif",
+    "media": "./assets/gifs/karakasa.gif",
+    "description": "A pixel-art game inspired by Japanese yokai folklore, where players control a mischievous umbrella spirit navigating haunted environments.",
+    "itchiolink": "https://idanbarzellai.itch.io/karakasa",
+    "googleplaylink": "https://play.google.com/store/apps/details?id=com.idan.barzellai"
+  },
+  {
+    "name": "Fiddler Crab",
+    "mediaType": "gif",
+    "media": "./assets/gifs/fiddlercrab.gif",
+    "description": "An underwater arcade platformer where players smash shells, collect pearls, and grow stronger through repeated runs.",
+    "itchiolink": "https://idanbarzellai.itch.io/fiddler-crab",
+    "googleplaylink": "https://play.google.com/store/apps/details?id=com.idanbarzellai.fiddlercrab"
+  },
+  {
+    "name": "AZ AKA",
+    "mediaType": "gif",
+    "media": "./assets/gifs/azaka.gif",
+    "description": "A fast-paced crisis management game where players react to incoming missile threats, balancing alerts, interceptions, and emergency handling under increasing pressure.",
+    "itchiolink": "https://idanbarzellai.itch.io/az-aka"
+  },
+  {
+    "name": "Floaty Space",
+    "mediaType": "gif",
+    "media": "./assets/gifs/floatyspace.gif",
+    "description": "A prototype puzzle experience built in Construct 3, exploring floating movement mechanics and spatial challenges.",
+    "itchiolink": "https://idanbarzellai.itch.io/floaty-space",
+    "googleplaylink": "https://play.google.com/store/apps/details?id=com.idanbarzellai.floatyspace"
+  },
+  {
+    "name": "Bubble To The Moon",
+    "mediaType": "gif",
+    "media": "./assets/gifs/bubbletothemoon.gif",
+    "description": "A lighthearted racing game where players navigate a bubble through space, focusing on movement and timing.",
+    "itchiolink": "https://liadn7.itch.io/bubbletothemoon"
+  },
+  {
+    "name": "Spelunky - The Board Game",
+    "mediaType": "image",
+    "media": "./assets/images/spelunky/0.png",
+    "mediaItems": [
+      {
+        "mediaType": "image",
+        "media": "./assets/images/spelunky/0.png"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/spelunky/1.jpg"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/spelunky/2.jpg"
+      },
+      {
+        "mediaType": "image",
+        "media": "./assets/images/spelunky/3.jpg"
+      }
+    ],
+    "description": "A board game adaptation of the classic Spelunky, translating digital exploration mechanics into a physical tabletop experience.",
+    "itchiolink": "https://idanbarzellai.itch.io/spelunky-the-board-game"
   },
   {
     "name": "From Myth To Games",
@@ -51,87 +106,6 @@
       }
     ],
     "description": "A research seminar on how mythological creatures has been implemented into gameplay mechanics."
-  },
-  {
-    "name": "Spelunky - The Board Game",
-    "mediaType": "image",
-    "media": "./assets/images/spelunky/0.png",
-    "mediaItems": [
-      {
-        "mediaType": "image",
-        "media": "./assets/images/spelunky/0.png"
-      },
-      {
-        "mediaType": "image",
-        "media": "./assets/images/spelunky/1.jpg"
-      },
-      {
-        "mediaType": "image",
-        "media": "./assets/images/spelunky/2.jpg"
-      },
-      {
-        "mediaType": "image",
-        "media": "./assets/images/spelunky/3.jpg"
-      }
-    ],
-    "description": "A board game adaptation of the classic Spelunky, translating digital exploration mechanics into a physical tabletop experience.",
-    "link": "https://idanbarzellai.itch.io/spelunky-the-board-game"
-  },
-  {
-    "name": "Fiddler Crab",
-    "mediaType": "gif",
-    "media": "./assets/gifs/fiddlercrab.gif",
-    "description": "An underwater arcade platformer where players smash shells, collect pearls, and grow stronger through repeated runs.",
-    "link": "https://idanbarzellai.itch.io/fiddler-crab"
-  },
-  {
-    "name": "This Is War",
-    "mediaType": "gif",
-    "media": "./assets/gifs/thisiswar.gif",
-    "description": "A strategic \"War\" card game built in Unity, focused on decision-making.",
-    "link": "https://idanbarzellai.itch.io/this-is-war"
-  },
-  {
-    "name": "Karakasa",
-    "mediaType": "gif",
-    "media": "./assets/gifs/karakasa.gif",
-    "description": "A pixel-art game inspired by Japanese yokai folklore, where players control a mischievous umbrella spirit navigating haunted environments.",
-    "link": "https://idanbarzellai.itch.io/karakasa"
-  },
-  {
-    "name": "Suzi's Punishment",
-    "mediaType": "gif",
-    "media": "./assets/gifs/suzis.gif",
-    "description": "A quirky platformer where a young girl battles surreal enemies in a chaotic and darkly humorous world.",
-    "link": "https://barzibroz.itch.io/suzis-punishment"
-  },
-  {
-    "name": "Floaty Space",
-    "mediaType": "gif",
-    "media": "./assets/gifs/floatyspace.gif",
-    "description": "A prototype puzzle experience built in Construct 3, exploring floating movement mechanics and spatial challenges.",
-    "link": "https://idanbarzellai.itch.io/floaty-space"
-  },
-  {
-    "name": "Bubble To The Moon",
-    "mediaType": "gif",
-    "media": "./assets/gifs/bubbletothemoon.gif",
-    "description": "A lighthearted racing game where players navigate a bubble through space, focusing on movement and timing.",
-    "link": "https://idanbarzellai.itch.io/bubble-to-the-moon"
-  },
-  {
-    "name": "WEFA! - Water Earth Fire & Air",
-    "mediaType": "gif",
-    "media": "./assets/gifs/wefa.gif",
-    "description": "A multiplayer arena combat game where players choose elemental powers and battle in fast-paced third-person action.",
-    "link": "https://idanbarzellai.itch.io/wefa"
-  },
-  {
-    "name": "Maze Away",
-    "mediaType": "gif",
-    "media": "./assets/gifs/mazeaway.gif",
-    "description": "A puzzle game focused on navigation and pathfinding through increasingly complex maze structures.",
-    "link": "https://idanbarzellai.itch.io/maze-away"
   },
   {
     "name": "The Crasher - \"radical\"",
@@ -176,20 +150,50 @@
       }
     ],
     "description": "A social deduction game inspired by Spyfall, where players must identify hidden roles through interaction and deduction.",
-    "link": "https://idanbarzellai.itch.io/the-crasher-radical"
+    "itchiolink": "https://idanbarzellai.itch.io/the-crasher-radical"
+  },
+  {
+    "name": "Suzi's Punishment",
+    "mediaType": "gif",
+    "media": "./assets/gifs/suzis.gif",
+    "description": "A quirky platformer where a young girl battles surreal enemies in a chaotic and darkly humorous world.",
+    "itchiolink": "https://barzibroz.itch.io/suzis-punishment"
+  },
+  {
+    "name": "This Is War",
+    "mediaType": "gif",
+    "media": "./assets/gifs/thisiswar.gif",
+    "description": "A strategic \"War\" card game built in Unity, focused on decision-making.",
+    "itchiolink": "https://idanbarzellai.itch.io/this-is-war"
+  },
+  {
+    "name": "WEFA! - Water Earth Fire & Air",
+    "mediaType": "gif",
+    "media": "./assets/gifs/wefa.gif",
+    "description": "A multiplayer arena combat game where players choose elemental powers and battle in fast-paced third-person action.",
+    "itchiolink": "https://idanbarzellai.itch.io/wefa"
   },
   {
     "name": "Jack And The Beanstalk - StoryTelling",
     "mediaType": "gif",
     "media": "./assets/gifs/jack.gif",
     "description": "An interactive storytelling project exploring narrative design through the classic Jack and the Beanstalk tale.",
-    "link": "https://idanbarzellai.itch.io/jack-and-the-beanstalk-storytelling"
+    "itchiolink": "https://idanbarzellai.itch.io/jack-and-the-beanstalk-storytelling"
+  },
+  {
+    "name": "Maze Away",
+    "mediaType": "gif",
+    "media": "./assets/gifs/mazeaway.gif",
+    "description": "A puzzle game focused on navigation and pathfinding through increasingly complex maze structures.",
+    "itchiolink": "https://idanbarzellai.itch.io/maze-away",
+    "googleplaylink": "https://play.google.com/store/apps/details?id=com.IdanBarzellai.MazeAway"
   },
   {
     "name": "Go Box Go",
     "mediaType": "gif",
     "media": "./assets/gifs/goboxgo.gif",
     "description": "A Unity learning project based on a racing course tutorial, focusing on physics and movement systems.",
-    "link": "https://idanbarzellai.itch.io/go-box-go"
+    "itchiolink": "https://idanbarzellai.itch.io/go-box-go",
+    "googleplaylink": "https://play.google.com/store/apps/details?id=com.IdanBarzellai.GoBoxGo"
   }
 ]
